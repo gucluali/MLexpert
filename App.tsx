@@ -6,6 +6,8 @@ import { FaultsView } from './components/FaultsView';
 import { MaintenanceView } from './components/MaintenanceView';
 import { CodesView } from './components/CodesView';
 import { AiAssistant } from './components/AiAssistant';
+import { PresentationView } from './components/PresentationView';
+import { ServicesView } from './components/ServicesView';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(View.HOME);
@@ -22,6 +24,10 @@ const App: React.FC = () => {
         return <CodesView />;
       case View.AI_ASSISTANT:
         return <AiAssistant />;
+      case View.PRESENTATIONS:
+        return <PresentationView />;
+      case View.SERVICES:
+        return <ServicesView />;
       default:
         return <HomeView onNavigate={setCurrentView} />;
     }

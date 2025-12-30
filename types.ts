@@ -4,6 +4,8 @@ export enum View {
   MAINTENANCE = 'MAINTENANCE',
   CODES = 'CODES',
   AI_ASSISTANT = 'AI_ASSISTANT',
+  PRESENTATIONS = 'PRESENTATIONS',
+  SERVICES = 'SERVICES',
 }
 
 export interface Fault {
@@ -27,6 +29,14 @@ export interface ChatMessage {
   text: string;
   timestamp: number;
   isLoading?: boolean;
+}
+
+export interface Slide {
+  id: number;
+  title: string;
+  subtitle?: string;
+  content: string[];
+  highlight?: string; // For specific codes or part numbers
 }
 
 export const OM642_SPECS = {

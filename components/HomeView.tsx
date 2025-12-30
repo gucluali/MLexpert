@@ -1,6 +1,6 @@
 import React from 'react';
 import { OM642_SPECS, View } from '../types';
-import { ArrowRight, Activity, Droplet, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Activity, Droplet, ShieldCheck, MonitorPlay } from 'lucide-react';
 
 interface HomeViewProps {
     onNavigate: (view: View) => void;
@@ -23,12 +23,21 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
             OM642 Motor Bakım, Onarım ve Teknik Bilgi Bankası. 
             AI destekli asistan ile aracınızın dilinden anlayın.
           </p>
-          <button 
-            onClick={() => onNavigate(View.AI_ASSISTANT)}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full flex items-center gap-2 transition-all transform hover:scale-105 shadow-lg border border-blue-500/50"
-          >
-            Sorununu Anlat <ArrowRight className="h-5 w-5" />
-          </button>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <button 
+                onClick={() => onNavigate(View.AI_ASSISTANT)}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full flex items-center gap-2 transition-all transform hover:scale-105 shadow-lg border border-blue-500/50 justify-center"
+            >
+                Sorununu Anlat <ArrowRight className="h-5 w-5" />
+            </button>
+            <button 
+                onClick={() => onNavigate(View.PRESENTATIONS)}
+                className="bg-slate-800/80 hover:bg-slate-700 text-white font-bold py-3 px-8 rounded-full flex items-center gap-2 transition-all transform hover:scale-105 backdrop-blur-sm border border-slate-600 justify-center"
+            >
+                <MonitorPlay className="h-5 w-5" />
+                Kronik Arıza Sunumu
+            </button>
+          </div>
         </div>
       </div>
 

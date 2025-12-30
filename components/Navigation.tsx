@@ -1,6 +1,6 @@
 import React from 'react';
 import { View } from '../types';
-import { Car, Wrench, FileText, AlertTriangle, MessageSquare, Menu, X } from 'lucide-react';
+import { Car, Wrench, FileText, AlertTriangle, MessageSquare, Menu, X, MonitorPlay, MapPin } from 'lucide-react';
 
 interface NavigationProps {
   currentView: View;
@@ -11,10 +11,12 @@ export const Navigation: React.FC<NavigationProps> = ({ currentView, onNavigate 
   const [isOpen, setIsOpen] = React.useState(false);
 
   const navItems = [
-    { view: View.HOME, label: 'Genel Bakış', icon: Car },
-    { view: View.FAULTS, label: 'Kronik Arızalar', icon: AlertTriangle },
-    { view: View.CODES, label: 'Hata Kodları', icon: FileText },
-    { view: View.MAINTENANCE, label: 'Bakım Şeması', icon: Wrench },
+    { view: View.HOME, label: 'Genel', icon: Car },
+    { view: View.FAULTS, label: 'Arızalar', icon: AlertTriangle },
+    { view: View.CODES, label: 'Kodlar', icon: FileText },
+    { view: View.MAINTENANCE, label: 'Bakım', icon: Wrench },
+    { view: View.PRESENTATIONS, label: 'Sunumlar', icon: MonitorPlay },
+    { view: View.SERVICES, label: 'Servis', icon: MapPin },
     { view: View.AI_ASSISTANT, label: 'AI Usta', icon: MessageSquare },
   ];
 
@@ -32,8 +34,8 @@ export const Navigation: React.FC<NavigationProps> = ({ currentView, onNavigate 
             </span>
           </div>
           
-          <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-4">
+          <div className="hidden lg:block">
+            <div className="ml-10 flex items-baseline space-x-2">
               {navItems.map((item) => (
                 <button
                   key={item.view}
@@ -51,7 +53,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentView, onNavigate 
             </div>
           </div>
           
-          <div className="-mr-2 flex md:hidden">
+          <div className="-mr-2 flex lg:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="bg-slate-800 inline-flex items-center justify-center p-2 rounded-md text-slate-400 hover:text-white hover:bg-slate-700 focus:outline-none"
@@ -64,7 +66,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentView, onNavigate 
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden bg-slate-800 pb-3 pt-2">
+        <div className="lg:hidden bg-slate-800 pb-3 pt-2 shadow-xl border-t border-slate-700">
           <div className="px-2 space-y-1 sm:px-3">
             {navItems.map((item) => (
               <button
