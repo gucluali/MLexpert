@@ -1,6 +1,14 @@
 import React from 'react';
-import { OM642_SPECS, View } from '../types';
+import { View } from '../types';
 import { ArrowRight, Activity, Droplet, ShieldCheck, MonitorPlay } from 'lucide-react';
+
+const OM642_SPECS = {
+    displacement: "2987 cc",
+    power: "224 PS / 510 Nm",
+    torque: "510 Nm",
+    oilSpec: "MB 229.51 / 229.52",
+    oilCapacity: "8.0 - 8.5 Litre"
+};
 
 interface HomeViewProps {
     onNavigate: (view: View) => void;

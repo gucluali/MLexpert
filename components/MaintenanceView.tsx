@@ -4,41 +4,41 @@ import { CheckCircle2, Clock, Info } from 'lucide-react';
 
 const SCHEDULE: MaintenanceItem[] = [
     {
-        intervalKm: 10000,
-        items: [
+        km: 10000,
+        tasks: [
             'Motor Yağı Değişimi (Mutlaka MB 229.51/229.52 Onaylı)',
             'Yağ Filtresi Değişimi',
             'Hava Filtresi Kontrolü (Tozlu bölgelerde değişim)',
             'Silecek Suyu ve Antifriz Seviyesi Kontrolü',
             'Lastik Basınçları ve Diş Derinliği Kontrolü'
         ],
-        notes: 'OM642 motoru kurum oluşturmaya meyillidir. Fabrika verisi 15.000 km olsa da, Türkiye şartlarında 10.000 km\'de yağ değişimi zincir ve turbo ömrünü uzatır.'
+        note: 'OM642 motoru kurum oluşturmaya meyillidir. Fabrika verisi 15.000 km olsa da, Türkiye şartlarında 10.000 km\'de yağ değişimi zincir ve turbo ömrünü uzatır.'
     },
     {
-        intervalKm: 20000,
-        items: [
+        km: 20000,
+        tasks: [
             '10.000 km bakımındaki tüm işlemler',
             'Mazot Filtresi Değişimi (Su sensörü kontrolü ile)',
             'Kabin (Polen) Filtresi Değişimi',
             'Fren Balataları Gözle Kontrolü',
             'Alt Takım ve Airmatic Körük Kontrolü'
         ],
-        notes: 'Mazot filtresi enjektör sağlığı için kritiktir. Yan sanayi filtreler enjektör bozabilir.'
+        note: 'Mazot filtresi enjektör sağlığı için kritiktir. Yan sanayi filtreler enjektör bozabilir.'
     },
     {
-        intervalKm: 40000,
-        items: [
+        km: 40000,
+        tasks: [
             '20.000 km bakımındaki tüm işlemler',
             'Fren Hidroliği Değişimi (Nem oranı ölçümü)',
             'Hava Filtreleri Değişimi (Sağ ve Sol Kutu)',
             'Ön-Arka Diferansiyel Yağ Seviyesi Kontrolü',
             'Sunroof Su Giderlerinin Temizlenmesi'
         ],
-        notes: 'W164 kasada sunroof giderleri tıkanırsa araç içine su alır ve SAM beyni (elektronik ünite) bozulur.'
+        note: 'W164 kasada sunroof giderleri tıkanırsa araç içine su alır ve SAM beyni (elektronik ünite) bozulur.'
     },
     {
-        intervalKm: 80000,
-        items: [
+        km: 80000,
+        tasks: [
             '40.000 km bakımındaki tüm işlemler',
             'Şanzıman Yağı ve Filtresi (7G-Tronic ATF 134FE - Kırmızı/Mavi Koda Dikkat)',
             'Transfer Kutusu (Arazi Şanzımanı) Yağı Değişimi',
@@ -46,7 +46,7 @@ const SCHEDULE: MaintenanceItem[] = [
             'Soğutma Sıvısı (Antifriz) Değişimi',
             'Diferansiyel Yağlarının Değişimi'
         ],
-        notes: '80.000 km veya 4 yıl ağır bakım zamanıdır. Şanzıman yağı değişmezse vuruntu başlar ve kart arızası verebilir.'
+        note: '80.000 km veya 4 yıl ağır bakım zamanıdır. Şanzıman yağı değişmezse vuruntu başlar ve kart arızası verebilir.'
     }
 ];
 
@@ -69,7 +69,7 @@ export const MaintenanceView: React.FC = () => {
                     <div key={index} className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition-all">
                         <div className="bg-slate-50 p-4 border-b border-slate-100 flex justify-between items-center">
                             <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                                <span className="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm">{item.intervalKm.toLocaleString()} KM</span>
+                                <span className="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm">{item.km.toLocaleString()} KM</span>
                                 <span className="text-slate-600 text-sm font-normal">veya her yıl</span>
                             </h3>
                             {index === 3 && <span className="text-red-500 font-bold text-xs border border-red-200 bg-red-50 px-2 py-1 rounded">AĞIR BAKIM</span>}
@@ -77,7 +77,7 @@ export const MaintenanceView: React.FC = () => {
                         
                         <div className="p-5">
                             <ul className="grid md:grid-cols-2 gap-3 mb-4">
-                                {item.items.map((sub, i) => (
+                                {item.tasks.map((sub, i) => (
                                     <li key={i} className="flex items-start gap-3 text-slate-700 text-sm">
                                         <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0 mt-0.5" />
                                         <span>{sub}</span>
@@ -85,10 +85,10 @@ export const MaintenanceView: React.FC = () => {
                                 ))}
                             </ul>
                             
-                            {item.notes && (
+                            {item.note && (
                                 <div className="bg-amber-50 text-amber-800 p-3 rounded-lg text-sm flex gap-3 border border-amber-100">
                                     <Info className="h-5 w-5 shrink-0" />
-                                    <p>{item.notes}</p>
+                                    <p>{item.note}</p>
                                 </div>
                             )}
                         </div>

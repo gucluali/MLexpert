@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Search, ServerCrash, Loader2, BookOpen, ChevronRight } from 'lucide-react';
-import { analyzeErrorCode } from '../services/geminiService';
+import { analyzeCode } from '../services/geminiService';
 
 const COMMON_CODES = [
     {
@@ -58,7 +58,7 @@ export const CodesView: React.FC = () => {
         setCode(searchCode.toUpperCase());
         
         try {
-            const analysis = await analyzeErrorCode(searchCode);
+            const analysis = await analyzeCode(searchCode);
             setResult(analysis);
         } catch (error) {
             setResult("Bir hata oluştu. Lütfen tekrar deneyin.");

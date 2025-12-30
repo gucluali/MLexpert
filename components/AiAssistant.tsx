@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChatMessage } from '../types';
-import { sendMessageToGemini } from '../services/geminiService';
+import { getGeminiResponse } from '../services/geminiService';
 import { Send, User, Bot, RefreshCw } from 'lucide-react';
 
 export const AiAssistant: React.FC = () => {
@@ -43,7 +43,7 @@ export const AiAssistant: React.FC = () => {
 
     try {
       const history = messages.map(m => ({ role: m.role, text: m.text }));
-      const responseText = await sendMessageToGemini(userText, history);
+      const responseText = await getGeminiResponse(userText, history);
       
       const newAiMsg: ChatMessage = {
         id: (Date.now() + 1).toString(),
