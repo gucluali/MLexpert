@@ -20,7 +20,9 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
 
       <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
         <div className="inline-block mb-4 px-3 py-1 border border-mercedes-accent/50 rounded-full bg-mercedes-accent/10 backdrop-blur-md">
-          <span className="text-mercedes-accent font-mono text-sm tracking-widest">EST. 2005 - STUTTGART / TUSCALOOSA</span>
+          <span className="text-mercedes-accent font-mono text-sm tracking-widest">
+            EST. 2005 • STUTTGART • <span className="text-green-400">SYSTEM ONLINE v2.1</span>
+          </span>
         </div>
         <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 tracking-tight drop-shadow-2xl">
           ALİ GÜÇLÜ <span className="text-mercedes-silver">W164 USER</span>

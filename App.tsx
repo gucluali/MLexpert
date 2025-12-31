@@ -46,7 +46,7 @@ const App: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
           <div>
             <p>&copy; 2024 ALİ GÜÇLÜ W164 USER. Tüm Hakları Saklıdır.</p>
-            <p className="text-xs mt-1">Mercedes-Benz, Daimler AG'nin tescilli markasıdır. Bu site bağımsız bir hayran projesidir.</p>
+            <p className="text-xs mt-1">Mercedes-Benz, Daimler AG'nin tescilli markasıdır. Bu site bağımsız bir hayran projesidir. (Build v2.1)</p>
           </div>
           <div className="flex gap-4">
              <span className="hover:text-white cursor-pointer transition-colors">Github</span>
