@@ -1,5 +1,5 @@
 {
-  "name": "ali̇-güçlü-w164-user---ultimate-w164-resource",
+  "name": "w164-expert-|-om642-master-guide",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,11 +10,9 @@
   },
   "dependencies": {
     "react": "^19.2.3",
-    "recharts": "^3.6.0",
-    "react-dom": "^19.2.3",
-    "@google/genai": "^1.34.0",
-    "vite": "^7.3.0",
-    "@vitejs/plugin-react": "^5.1.2"
+    "lucide-react": "0.292.0",
+    "@google/genai": "0.1.1",
+    "react-dom": "^19.2.3"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

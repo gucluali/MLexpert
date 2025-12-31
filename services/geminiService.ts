@@ -1,65 +1,72 @@
 import { GoogleGenAI } from "@google/genai";
-import { ChatMessage } from "../types";
+import { Language } from "../types";
 
-// Initialize Gemini Client
-const getClient = () => {
-  const apiKey = process.env.API_KEY;
+// Initialize the API client
+const apiKey = process.env.API_KEY || '';
+
+const ai = new GoogleGenAI({ apiKey });
+
+const SYSTEM_INSTRUCTION_EN = `
+You are a World-Class Mercedes-Benz Master Technician specializing in the W164 ML-Class platform and the OM642 V6 Diesel engine. 
+You have 20+ years of experience dealing with issues like the Oil Cooler Seals, Swirl Flap Motor (M55), Airmatic suspension, and 7G-Tronic transmission.
+
+Your tone is professional, technical, authoritative, yet helpful. You speak to the user as a fellow mechanic or a knowledgeable owner.
+
+Key Responsibilities:
+1. Diagnose problems based on symptoms described.
+2. Provide torque specifications (e.g., injector clamp bolts, main bearing caps).
+3. Recommend specific fluid standards (MB 229.51, MB 236.14).
+4. Explain complex repair procedures (e.g., replacing the oil cooler seals deep in the V).
+5. Interpret OBDII codes related to Mercedes specific systems (STAR/XENTRY context).
+
+If you don't know an exact spec, advise the user to check WIS (Workshop Information System) rather than guessing. 
+Always emphasize safety and proper torque sequences.
+`;
+
+const SYSTEM_INSTRUCTION_TR = `
+Siz, W164 ML-Class platformu ve OM642 V6 Dizel motoru konusunda uzmanlaşmış Dünya Çapında bir Mercedes-Benz Usta Teknisyenisiniz.
+Yağ Soğutucu Contaları, Girdap Kapak Motoru (M55), Airmatic süspansiyon ve 7G-Tronic şanzıman gibi sorunlarla başa çıkma konusunda 20 yılı aşkın deneyiminiz var.
+
+Tonunuz profesyonel, teknik, otoriter ancak yardımseverdir. Kullanıcıyla bir tamirci meslektaşınız veya bilgili bir araç sahibi gibi konuşursunuz.
+
+Temel Sorumluluklar:
+1. Açıklanan belirtilere dayanarak sorunları teşhis edin.
+2. Tork spesifikasyonlarını sağlayın (örn. enjektör cıvataları, ana yatak kapakları).
+3. Belirli sıvı standartlarını önerin (MB 229.51, MB 236.14).
+4. Karmaşık onarım prosedürlerini açıklayın (örn. V yatağının derinliklerindeki yağ soğutucu contalarını değiştirmek).
+5. Mercedes'e özgü sistemlerle ilgili OBDII kodlarını yorumlayın (STAR/XENTRY bağlamı).
+
+Tam bir teknik özelliği bilmiyorsanız, tahmin etmek yerine kullanıcıya WIS'i (Atölye Bilgi Sistemi) kontrol etmesini tavsiye edin.
+Her zaman güvenliği ve uygun tork sıralarını vurgulayın.
+`;
+
+export const sendMessageToExpert = async (
+  message: string, 
+  history: { role: string; parts: { text: string }[] }[],
+  lang: Language
+): Promise<string> => {
   if (!apiKey) {
-    throw new Error("API Key is missing. Check process.env.API_KEY");
+    return lang === 'tr' ? "API Anahtarı eksik." : "API Key is missing.";
   }
-  return new GoogleGenAI({ apiKey });
-};
 
-export const getAIUstaResponse = async (history: ChatMessage[], newMessage: string): Promise<string> => {
   try {
-    const ai = getClient();
-    
-    // Construct the context based on history
-    // We only send the last few messages to keep context relevant but manageable
-    const recentHistory = history.slice(-6); 
-    
-    // System Instruction for the persona
-    const systemInstruction = `
-      Sen "Ali Güçlü", Mercedes-Benz W164 kasa ve OM642 motorlar konusunda uzmanlaşmış, yılların tecrübesine sahip usta bir makine mühendisi ve tamircisin.
-      
-      Kullanıcı sana arıza belirtileri, parça soruları veya teknik değerler soracak.
-      Cevapların şu formatta olmalı:
-      1. Samimi, "Usta" ağzıyla ama profesyonel teknik dille konuş (Örn: "Bak kardeşim, o ses turbodan değil manifolddan geliyor olabilir").
-      2. W164'ün kronik sorunlarını (Yağ soğutucu, SAM beyni, Airmatic, Türbin) göz önünde bulundur.
-      3. Olası arıza kodlarını tahmin etmeye çalış.
-      4. Mümkünse parça numarası veya teknik sıvı onayı (MB 229.51 gibi) ver.
-      5. Güvenlik uyarısı yapmayı unutma.
-      
-      Eğer konu Mercedes W164 veya OM642 dışındaysa, nazikçe konuyu tekrar Mercedes'e getir.
-    `;
-
-    // Format history for the API
-    // Note: The API treats 'user' and 'model' roles.
-    let contents = recentHistory.map(msg => ({
-      role: msg.role === 'user' ? 'user' : 'model',
-      parts: [{ text: msg.text }]
-    }));
-
-    // Add the new message
-    contents.push({
-      role: 'user',
-      parts: [{ text: newMessage }]
+    const model = ai.models.getGenerativeModel({
+      model: "gemini-3-flash-preview",
+      systemInstruction: lang === 'tr' ? SYSTEM_INSTRUCTION_TR : SYSTEM_INSTRUCTION_EN,
     });
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview', // Using fast thinking model
-      contents: contents,
-      config: {
-        systemInstruction: systemInstruction,
-        temperature: 0.7, // Creative but accurate
-        maxOutputTokens: 800,
-      }
+    const chat = model.startChat({
+      history: history,
     });
 
-    return response.text || "Usta şu an meşgul, lifte araç kaldırıyor. Tekrar dener misin?";
-
+    const result = await chat.sendMessage(message);
+    const response = result.response;
+    
+    return response.text();
   } catch (error) {
-    console.error("AI Usta Error:", error);
-    return "Bağlantıda bir sorun oluştu evlat. Kaputu açıp tekrar bakalım (Sistemsel Hata).";
+    console.error("Error communicating with Gemini:", error);
+    return lang === 'tr' 
+      ? "Bilgi bankasına bağlanırken bir hata oluştu. Lütfen tekrar deneyin."
+      : "I encountered a diagnostic error connecting to the knowledge base. Please try again.";
   }
 };

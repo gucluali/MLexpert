@@ -1,99 +1,114 @@
 import React from 'react';
-import { ViewState } from '../types';
+import { PageView, Language } from '../types';
+import { Wrench, Droplet, AlertTriangle, Cpu, Car, BookOpen, Languages } from 'lucide-react';
 
 interface NavbarProps {
-  currentView: ViewState;
-  onNavigate: (view: ViewState) => void;
+  currentPage: PageView;
+  onNavigate: (page: PageView) => void;
+  lang: Language;
+  setLang: (lang: Language) => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate }) => {
+const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, lang, setLang }) => {
+  const translations = {
+    en: {
+      overview: 'Overview',
+      models: 'Encyclopedia',
+      engine: 'OM642 Engine',
+      fluids: 'Fluids & Specs',
+      faults: 'Diagnostics'
+    },
+    tr: {
+      overview: 'Özet',
+      models: 'Ansiklopedi',
+      engine: 'OM642 Motor',
+      fluids: 'Sıvılar & Spek',
+      faults: 'Arıza Teşhis'
+    }
+  };
+
+  const t = translations[lang];
+
   const navItems = [
-    { id: ViewState.HOME, label: 'Ana Sayfa' },
-    { id: ViewState.SPECS, label: 'Teknik Veri' },
-    { id: ViewState.FAULTS, label: 'Arızalar' },
-    { id: ViewState.STATS, label: 'Grafikler' },
-    { id: ViewState.HISTORY, label: 'Tarihçe' },
-    { id: ViewState.AI_USTA, label: 'AI USTA', special: true },
+    { id: PageView.HOME, label: t.overview, icon: Car },
+    { id: PageView.MODELS, label: t.models, icon: BookOpen },
+    { id: PageView.ENGINE, label: t.engine, icon: Cpu },
+    { id: PageView.FLUIDS, label: t.fluids, icon: Droplet },
+    { id: PageView.FAULTS, label: t.faults, icon: AlertTriangle },
   ];
 
   return (
-    <nav className="bg-mercedes-panel border-b border-slate-700 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between h-20">
-          
-          {/* Logo */}
-          <div 
-            className="flex items-center cursor-pointer gap-2" 
-            onClick={() => onNavigate(ViewState.HOME)}
-          >
-            <div className="w-10 h-10 rounded-full bg-slate-800 border-2 border-slate-500 flex items-center justify-center">
-               {/* Abstract Star Icon */}
-               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-               </svg>
+    <nav className="sticky top-0 z-50 bg-slate-900/95 backdrop-blur-sm border-b border-slate-700 shadow-lg">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => onNavigate(PageView.HOME)}>
+            <div className="bg-blue-600 p-1.5 rounded-lg">
+              <Wrench className="h-6 w-6 text-white" />
             </div>
-            <div className="flex flex-col">
-              <span className="text-white font-bold tracking-wider text-lg">ALİ GÜÇLÜ</span>
-              <span className="text-slate-400 text-xs tracking-[0.2em] font-mono">W164 USER</span>
-            </div>
+            <span className="text-xl font-bold text-white tracking-tight">
+              W164<span className="text-blue-500">Expert</span>
+            </span>
           </div>
-
-          {/* Desktop Menu */}
-          <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-4">
+          
+          <div className="hidden md:flex items-center gap-4">
+            <div className="flex items-baseline space-x-2">
               {navItems.map((item) => (
                 <button
                   key={item.id}
                   onClick={() => onNavigate(item.id)}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                    item.special 
-                    ? 'bg-mercedes-accent text-white hover:bg-blue-600 shadow-lg shadow-blue-500/20' 
-                    : currentView === item.id 
-                      ? 'text-white bg-slate-700' 
-                      : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                  className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    currentPage === item.id
+                      ? 'bg-blue-600/20 text-blue-400 border border-blue-600/30'
+                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                   }`}
                 >
+                  <item.icon className="h-4 w-4" />
                   {item.label}
                 </button>
               ))}
             </div>
+            
+            <div className="h-6 w-px bg-slate-700 mx-2"></div>
+
+            <button
+              onClick={() => setLang(lang === 'en' ? 'tr' : 'en')}
+              className="flex items-center gap-1.5 px-2 py-1.5 rounded-md hover:bg-slate-800 transition-colors text-slate-300"
+            >
+              <Languages className="h-4 w-4" />
+              <span className="text-xs font-bold font-mono">{lang.toUpperCase()}</span>
+            </button>
           </div>
 
-          {/* Mobile Menu Button (Simplified) */}
-          <div className="md:hidden">
-             <div className="flex gap-2">
-                <button 
-                  onClick={() => onNavigate(ViewState.AI_USTA)}
-                  className="p-2 rounded-md text-white bg-mercedes-accent"
-                >
-                  AI
-                </button>
-                <button 
-                   className="text-gray-300 hover:text-white p-2"
-                   onClick={() => onNavigate(ViewState.HOME)} // Simple reset for demo
-                >
-                   <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                   </svg>
-                </button>
-             </div>
+          {/* Mobile Lang Toggle */}
+          <div className="md:hidden flex items-center">
+             <button
+              onClick={() => setLang(lang === 'en' ? 'tr' : 'en')}
+              className="flex items-center gap-1 px-3 py-2 rounded-md bg-slate-800 text-slate-300"
+            >
+              <span className="text-xs font-bold">{lang.toUpperCase()}</span>
+            </button>
           </div>
         </div>
       </div>
       
-      {/* Mobile Menu List (Visible only on small screens below main nav - rudimentary implementation) */}
-      <div className="md:hidden flex overflow-x-auto bg-slate-900 pb-2 px-2 gap-2 scrollbar-hide">
-         {navItems.filter(i => !i.special).map(item => (
+      {/* Mobile Navigation Bar (Bottom) */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-700 pb-safe z-50">
+        <div className="flex justify-around py-3 overflow-x-auto">
+          {navItems.map((item) => (
             <button
-               key={item.id}
-               onClick={() => onNavigate(item.id)}
-               className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold border ${
-                 currentView === item.id ? 'bg-slate-700 border-slate-500 text-white' : 'border-slate-800 text-slate-400'
-               }`}
+              key={item.id}
+              onClick={() => onNavigate(item.id)}
+              className={`flex flex-col items-center gap-1 min-w-[60px] ${
+                currentPage === item.id ? 'text-blue-500' : 'text-slate-400'
+              }`}
             >
-              {item.label}
+              <item.icon className="h-5 w-5" />
+              <span className="text-[10px] uppercase tracking-wider truncate w-full text-center px-1">
+                {item.label}
+              </span>
             </button>
-         ))}
+          ))}
+        </div>
       </div>
     </nav>
   );

@@ -1,38 +1,33 @@
-export enum ViewState {
-  HOME = 'HOME',
-  HISTORY = 'HISTORY',
-  SPECS = 'SPECS',
-  FAULTS = 'FAULTS',
-  STATS = 'STATS',
-  AI_USTA = 'AI_USTA'
-}
-
-export interface SpecItem {
-  component: string;
-  fluid: string;
-  spec: string;
-  capacity: string;
-  interval: string;
-}
-
-export interface FaultItem {
-  code: string;
+export interface FluidSpec {
+  id: string;
   system: string;
-  symptom: string;
-  solution: string;
-  difficulty: 'Easy' | 'Medium' | 'Hard' | 'Expert';
-  cost: 'Low' | 'Medium' | 'High' | 'Very High';
+  code: string;
+  capacity: string;
+  specification: string;
+  notes: string;
+  partNumber?: string;
 }
 
-export interface HistoryEvent {
-  year: string;
-  title: string;
+export interface FaultCode {
+  code: string;
   description: string;
+  possibleCauses: string[];
+  solution: string;
+  severity: 'Low' | 'Medium' | 'High' | 'Critical';
 }
 
 export interface ChatMessage {
-  id: string;
   role: 'user' | 'model';
   text: string;
-  timestamp: number;
+  timestamp: Date;
 }
+
+export enum PageView {
+  HOME = 'HOME',
+  MODELS = 'MODELS',
+  ENGINE = 'ENGINE',
+  FLUIDS = 'FLUIDS',
+  FAULTS = 'FAULTS'
+}
+
+export type Language = 'en' | 'tr';

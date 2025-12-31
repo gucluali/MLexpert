@@ -1,69 +1,1143 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ALİ GÜÇLÜ W164 USER - Ultimate W164 Resource</title>
+    <title>W164 Expert | Mercedes-Benz ML & OM642 Guide</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Babel for in-browser JSX compilation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Tailwind Config -->
     <script>
       tailwind.config = {
         theme: {
           extend: {
-            colors: {
-              mercedes: {
-                dark: '#0f172a',
-                silver: '#cbd5e1',
-                accent: '#3b82f6',
-                panel: '#1e293b'
-              }
-            },
             fontFamily: {
               sans: ['Inter', 'sans-serif'],
-              mono: ['Fira Code', 'monospace'],
+              mono: ['JetBrains Mono', 'monospace'],
+            },
+            colors: {
+              mb: {
+                black: '#1a1a1a',
+                silver: '#e5e7eb',
+                blue: '#00adef', // Mercedes-ish mechanic blue
+                dark: '#0f172a',
+              }
+            },
+            animation: {
+              'fade-in': 'fadeIn 0.5s ease-out',
+            },
+            keyframes: {
+              fadeIn: {
+                '0%': { opacity: '0', transform: 'translateY(10px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              },
             }
-          }
-        }
+          },
+        },
       }
     </script>
-    <style>
-      body {
-        background-color: #0f172a;
-        color: #f1f5f9;
-      }
-      /* Custom scrollbar for data tables */
-      ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-      }
-      ::-webkit-scrollbar-track {
-        background: #1e293b; 
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #475569; 
-        border-radius: 4px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #64748b; 
-      }
-    </style>
-  <script type="importmap">
+
+    <!-- Import Map for Modules -->
+    <script type="importmap">
 {
   "imports": {
-    "react": "https://esm.sh/react@^19.2.3",
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "recharts": "https://esm.sh/recharts@^3.6.0",
+    "react": "https://esm.sh/react@18.2.0",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "lucide-react": "https://esm.sh/lucide-react@0.292.0",
+    "@google/genai": "https://esm.sh/@google/genai@0.1.1",
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
-    "vite": "https://esm.sh/vite@^7.3.0",
-    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
+    "react/": "https://esm.sh/react@^19.2.3/"
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
+  <link rel="stylesheet" href="/index.css">
 </head>
-  <body>
+  <body class="bg-mb-dark text-slate-200 antialiased selection:bg-blue-500 selection:text-white">
     <div id="root"></div>
-    <script type="module" src="./index.tsx"></script>
+
+    <!-- Main Application Script -->
+    <script type="text/babel" data-type="module">
+      import React, { useState, useEffect, useRef } from 'react';
+      import { createRoot } from 'react-dom/client';
+      import { 
+        Wrench, Droplet, AlertTriangle, Cpu, MessageSquare, 
+        Car, BookOpen, Languages, ShieldCheck, AlertCircle, 
+        CheckCircle2, Settings, Search, Activity, PenTool, 
+        CheckCircle, Send, Bot, User, Loader2, Key,
+        BadgeInfo, Gauge, Calendar, Cog, ChevronRight, Lock
+      } from 'lucide-react';
+      import { GoogleGenAI } from "@google/genai";
+
+      // --- CONSTANTS & TYPES LOGIC ---
+      const PageView = {
+        HOME: 'HOME',
+        MODELS: 'MODELS',
+        ENGINE: 'ENGINE',
+        FLUIDS: 'FLUIDS',
+        FAULTS: 'FAULTS',
+        ASSISTANT: 'ASSISTANT'
+      };
+
+      const SYSTEM_INSTRUCTION_EN = `
+        You are a World-Class Mercedes-Benz Master Technician specializing in the W164 ML-Class platform and the OM642 V6 Diesel engine. 
+        You have 20+ years of experience dealing with issues like the Oil Cooler Seals, Swirl Flap Motor (M55), Airmatic suspension, and 7G-Tronic transmission.
+        Your tone is professional, technical, authoritative, yet helpful. You speak to the user as a fellow mechanic or a knowledgeable owner.
+        Key Responsibilities:
+        1. Diagnose problems based on symptoms described.
+        2. Provide torque specifications.
+        3. Recommend specific fluid standards (MB 229.51, MB 236.14).
+        4. Explain complex repair procedures.
+        5. Interpret OBDII codes.
+        If you don't know an exact spec, advise the user to check WIS.
+      `;
+
+      const SYSTEM_INSTRUCTION_TR = `
+        Siz, W164 ML-Class platformu ve OM642 V6 Dizel motoru konusunda uzmanlaşmış Dünya Çapında bir Mercedes-Benz Usta Teknisyenisiniz.
+        Yağ Soğutucu Contaları, Girdap Kapak Motoru (M55), Airmatic süspansiyon ve 7G-Tronic şanzıman gibi sorunlarla başa çıkma konusunda 20 yılı aşkın deneyiminiz var.
+        Tonunuz profesyonel, teknik, otoriter ancak yardımseverdir. Kullanıcıyla bir tamirci meslektaşınız veya bilgili bir araç sahibi gibi konuşursunuz.
+        Temel Sorumluluklar:
+        1. Açıklanan belirtilere dayanarak sorunları teşhis edin.
+        2. Tork spesifikasyonlarını sağlayın.
+        3. Belirli sıvı standartlarını önerin (MB 229.51, MB 236.14).
+        4. Karmaşık onarım prosedürlerini açıklayın.
+        5. Mercedes'e özgü sistemlerle ilgili OBDII kodlarını yorumlayın.
+        Tam bir teknik özelliği bilmiyorsanız, tahmin etmek yerine kullanıcıya WIS'i kontrol etmesini tavsiye edin.
+      `;
+
+      // Updated to accept dynamic API Key
+      const sendMessageToExpert = async (message, history, lang, userApiKey) => {
+        if (!userApiKey) {
+          return lang === 'tr' ? "API Anahtarı eksik." : "API Key is missing.";
+        }
+
+        try {
+          const ai = new GoogleGenAI({ apiKey: userApiKey });
+          const model = ai.models.getGenerativeModel({
+            model: "gemini-1.5-flash", 
+            systemInstruction: lang === 'tr' ? SYSTEM_INSTRUCTION_TR : SYSTEM_INSTRUCTION_EN,
+          });
+
+          const chat = model.startChat({
+            history: history,
+          });
+
+          const result = await chat.sendMessage(message);
+          const response = result.response;
+          return response.text();
+        } catch (error) {
+          console.error("Error communicating with Gemini:", error);
+          return lang === 'tr' 
+            ? "Bağlantı hatası: API Anahtarınızı kontrol edin veya daha sonra tekrar deneyin."
+            : "Connection error: Please check your API Key or try again later.";
+        }
+      };
+
+      // --- COMPONENTS ---
+
+      // 1. NAVBAR
+      const Navbar = ({ currentPage, onNavigate, lang, setLang }) => {
+        const translations = {
+          en: {
+            overview: 'Overview',
+            models: 'Encyclopedia',
+            engine: 'OM642 Engine',
+            fluids: 'Fluids & Specs',
+            faults: 'Diagnostics',
+            assistant: 'AI Mechanic'
+          },
+          tr: {
+            overview: 'Özet',
+            models: 'Ansiklopedi',
+            engine: 'OM642 Motor',
+            fluids: 'Sıvılar & Spek',
+            faults: 'Arıza Teşhis',
+            assistant: 'AI Uzman'
+          }
+        };
+
+        const t = translations[lang];
+
+        const navItems = [
+          { id: PageView.HOME, label: t.overview, icon: Car },
+          { id: PageView.MODELS, label: t.models, icon: BookOpen },
+          { id: PageView.ENGINE, label: t.engine, icon: Cpu },
+          { id: PageView.FLUIDS, label: t.fluids, icon: Droplet },
+          { id: PageView.FAULTS, label: t.faults, icon: AlertTriangle },
+          { id: PageView.ASSISTANT, label: t.assistant, icon: MessageSquare },
+        ];
+
+        return (
+          <nav className="sticky top-0 z-50 bg-slate-900/95 backdrop-blur-sm border-b border-slate-700 shadow-lg">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex items-center justify-between h-16">
+                <div className="flex items-center gap-2 cursor-pointer" onClick={() => onNavigate(PageView.HOME)}>
+                  <div className="bg-blue-600 p-1.5 rounded-lg">
+                    <Wrench className="h-6 w-6 text-white" />
+                  </div>
+                  <span className="text-xl font-bold text-white tracking-tight">
+                    W164<span className="text-blue-500">Expert</span>
+                  </span>
+                </div>
+                
+                <div className="hidden md:flex items-center gap-4">
+                  <div className="flex items-baseline space-x-2">
+                    {navItems.map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => onNavigate(item.id)}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                          currentPage === item.id
+                            ? 'bg-blue-600/20 text-blue-400 border border-blue-600/30'
+                            : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                        }`}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                  
+                  <div className="h-6 w-px bg-slate-700 mx-2"></div>
+
+                  <button
+                    onClick={() => setLang(lang === 'en' ? 'tr' : 'en')}
+                    className="flex items-center gap-1.5 px-2 py-1.5 rounded-md hover:bg-slate-800 transition-colors text-slate-300"
+                  >
+                    <Languages className="h-4 w-4" />
+                    <span className="text-xs font-bold font-mono">{lang.toUpperCase()}</span>
+                  </button>
+                </div>
+
+                {/* Mobile Lang Toggle */}
+                <div className="md:hidden flex items-center">
+                   <button
+                    onClick={() => setLang(lang === 'en' ? 'tr' : 'en')}
+                    className="flex items-center gap-1 px-3 py-2 rounded-md bg-slate-800 text-slate-300"
+                  >
+                    <span className="text-xs font-bold">{lang.toUpperCase()}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            {/* Mobile Navigation Bar (Bottom) */}
+            <div className="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-700 pb-safe z-50">
+              <div className="flex justify-around py-3 overflow-x-auto">
+                {navItems.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => onNavigate(item.id)}
+                    className={`flex flex-col items-center gap-1 min-w-[60px] ${
+                      currentPage === item.id ? 'text-blue-500' : 'text-slate-400'
+                    }`}
+                  >
+                    <item.icon className="h-5 w-5" />
+                    <span className="text-[10px] uppercase tracking-wider truncate w-full text-center px-1">
+                      {item.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </nav>
+        );
+      };
+
+      // 2. ENGINE SECTION
+      const EngineSection = () => {
+        return (
+          <div className="space-y-8 animate-fade-in">
+            <div className="relative h-64 md:h-80 rounded-2xl overflow-hidden shadow-2xl border border-slate-700 group">
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent z-10"></div>
+              <img 
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Mercedes-Benz_OM642_DE_30_LA_engine_%282007%29.jpg/1280px-Mercedes-Benz_OM642_DE_30_LA_engine_%282007%29.jpg" 
+                onError={(e) => {
+                  e.currentTarget.src = "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?q=80&w=1600&auto=format&fit=crop";
+                }}
+                alt="OM642 Engine Block" 
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+              />
+              <div className="absolute bottom-6 left-6 z-20">
+                <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">OM642 V6 CDI</h2>
+                <p className="text-blue-400 font-mono text-sm md:text-base">3.0L TURBO DIESEL | 510-620 NM TORQUE</p>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700">
+                <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                  <Settings className="text-blue-500" /> Technical Architecture
+                </h3>
+                <ul className="space-y-3 text-slate-300">
+                  <li className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2"></span>
+                    <span><strong>Block:</strong> Aluminium with cast-in grey iron cylinder liners. 72° V-angle.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2"></span>
+                    <span><strong>Injection:</strong> Bosch Piezo-electric Common Rail (1600+ bar).</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2"></span>
+                    <span><strong>Induction:</strong> Variable Nozzle Turbine (VNT) Turbocharger.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2"></span>
+                    <span><strong>Timing:</strong> Double overhead camshafts (DOHC), driven by a duplex chain.</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700">
+                <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                  <AlertCircle className="text-amber-500" /> Known Weak Points
+                </h3>
+                <div className="space-y-4">
+                  <div className="bg-slate-900/50 p-3 rounded-lg border-l-4 border-amber-500">
+                    <h4 className="font-bold text-amber-500 text-sm">Oil Cooler Seals</h4>
+                    <p className="text-xs text-slate-400 mt-1">
+                      The infamous "purple seals" degrade, causing massive oil leaks into the V-valley.
+                    </p>
+                  </div>
+                  <div className="bg-slate-900/50 p-3 rounded-lg border-l-4 border-amber-500">
+                    <h4 className="font-bold text-amber-500 text-sm">Swirl Flap Motor (M55)</h4>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Oil dripping from the PCV/intake ruins the motor, causing Limp Mode.
+                    </p>
+                  </div>
+                  <div className="bg-slate-900/50 p-3 rounded-lg border-l-4 border-amber-500">
+                    <h4 className="font-bold text-amber-500 text-sm">Black Death (Injector Seals)</h4>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Copper washers fail, allowing carbon buildup around injectors.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-blue-900/20 p-6 rounded-xl border border-blue-800/50">
+              <h3 className="text-xl font-bold text-blue-100 mb-4 flex items-center gap-2">
+                <CheckCircle2 className="text-blue-500" /> Maintenance Strategy
+              </h3>
+              <p className="text-slate-300 mb-4">
+                The OM642 is capable of 500,000km+ if maintained correctly. The factory 25,000km oil change interval is generally considered too long.
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="text-center p-3 bg-slate-800 rounded-lg">
+                  <div className="text-2xl font-bold text-white">10k km</div>
+                  <div className="text-xs text-slate-400 uppercase tracking-wider">Oil Change Max</div>
+                </div>
+                <div className="text-center p-3 bg-slate-800 rounded-lg">
+                  <div className="text-2xl font-bold text-white">60k km</div>
+                  <div className="text-xs text-slate-400 uppercase tracking-wider">Fuel Filter</div>
+                </div>
+                <div className="text-center p-3 bg-slate-800 rounded-lg">
+                  <div className="text-2xl font-bold text-white">Every Svc</div>
+                  <div className="text-xs text-slate-400 uppercase tracking-wider">Drain Fuel Water</div>
+                </div>
+                <div className="text-center p-3 bg-slate-800 rounded-lg">
+                  <div className="text-2xl font-bold text-white">Check</div>
+                  <div className="text-xs text-slate-400 uppercase tracking-wider">Intake for Oil</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+      // 3. FLUID TABLE
+      const FluidTable = ({ lang }) => {
+        const t = {
+          title: lang === 'en' ? 'Fluid Specifications & Capacities' : 'Sıvı Özellikleri ve Kapasiteleri',
+          subtitle: lang === 'en' 
+            ? 'Using correct fluids is non-negotiable for Mercedes-Benz longevity.'
+            : 'Mercedes-Benz uzun ömürlülüğü için doğru sıvıları kullanmak tartışılmazdır.',
+          warning: lang === 'en'
+            ? 'NEVER use generic "Multi-Vehicle" fluids unless they specifically list the MB Approval sheet number.'
+            : 'MB Onay numarası özellikle listelenmedikçe ASLA genel "Çok Araçlı" sıvılar kullanmayın.',
+          system: lang === 'en' ? 'System' : 'Sistem',
+          sheet: lang === 'en' ? 'MB Sheet' : 'MB Onay',
+          part: lang === 'en' ? 'OEM Part #' : 'OEM Parça #',
+          capacity: lang === 'en' ? 'Capacity' : 'Kapasite',
+          notes: lang === 'en' ? 'Notes' : 'Notlar',
+          bevoTitle: lang === 'en' ? 'Bevo System' : 'Bevo Sistemi',
+          bevoText: lang === 'en' 
+            ? 'Mercedes-Benz maintains an official operating fluids database called "Bevo". Always cross-reference the numbers here with the official Bevo site.'
+            : 'Mercedes-Benz, "Bevo" adında resmi bir işletme sıvıları veritabanı tutar. Buradaki numaraları her zaman resmi Bevo sitesiyle karşılaştırın.',
+          adblueTitle: lang === 'en' ? 'AdBlue (BlueTEC)' : 'AdBlue (BlueTEC)',
+          adblueText: lang === 'en'
+            ? 'For BlueTEC models, ensure you use ISO 22241 standard Diesel Exhaust Fluid (DEF). Tank holds approx 28 Liters.'
+            : 'BlueTEC modelleri için ISO 22241 standardı Dizel Egzoz Sıvısı (DEF) kullandığınızdan emin olun. Depo yaklaşık 28 Litre alır.'
+        };
+
+        const FLUID_DATA = [
+          {
+            id: '1',
+            system: 'Engine Oil (OM642)',
+            code: 'MB 229.51 / 229.52',
+            capacity: '8.5 Liters',
+            specification: 'Low SAPS 5W-30',
+            partNumber: 'A 000 989 83 01',
+            notes: lang === 'en' ? 'Crucial for DPF health. Do not use 229.5.' : 'DPF sağlığı için kritik. 229.5 kullanmayın.'
+          },
+          {
+            id: '2',
+            system: 'Transmission (7G 722.9)',
+            code: 'MB 236.14 (Red)',
+            capacity: '9.0 Liters (Total)',
+            specification: 'ATF 134',
+            partNumber: 'A 001 989 68 03',
+            notes: lang === 'en' ? 'Early W164 use Red fluid (236.14). Do not mix with Blue (236.15)!' : 'Erken W164 Kırmızı sıvı kullanır. Mavi ile karıştırmayın!'
+          },
+          {
+            id: '3',
+            system: 'Coolant',
+            code: 'MB 325.0 / 326.0',
+            capacity: '9.5 Liters',
+            specification: 'G48 (Blue/Green)',
+            partNumber: 'A 000 989 08 25',
+            notes: lang === 'en' ? 'Mix 50/50 with distilled water.' : 'Saf su ile %50 oranında karıştırın.'
+          },
+          {
+            id: '4',
+            system: 'Power Steering',
+            code: 'MB 236.3',
+            capacity: '1.2 Liters',
+            specification: 'Lenkgetriebeöl',
+            partNumber: 'A 000 989 88 03',
+            notes: lang === 'en' ? 'Specific MB fluid required. Check reservoir cap.' : 'Özel MB sıvısı gereklidir. Hazne kapağını kontrol edin.'
+          },
+          {
+            id: '5',
+            system: 'Brake Fluid',
+            code: 'DOT 4 Plus',
+            capacity: '1.0 Liter',
+            specification: 'MB 331.0',
+            partNumber: 'A 000 989 08 07',
+            notes: lang === 'en' ? 'Change every 2 years.' : 'Her 2 yılda bir değiştirin.'
+          },
+          {
+            id: '6',
+            system: 'Differential (F/R)',
+            code: 'MB 235.7',
+            capacity: '1.1L Each',
+            specification: '75W-85 Hypoid',
+            partNumber: 'A 001 989 33 03',
+            notes: lang === 'en' ? 'Fill until overflows fill hole.' : 'Dolum deliğinden taşana kadar doldurun.'
+          },
+          {
+            id: '7',
+            system: 'Transfer Case',
+            code: 'MB 236.12 / ATF 3353',
+            capacity: '0.5 Liters',
+            specification: 'ATF',
+            partNumber: 'A 001 989 45 03',
+            notes: lang === 'en' ? 'Critical for 4MATIC system.' : '4MATIC sistemi için kritik.'
+          }
+        ];
+
+        return (
+          <div className="space-y-6">
+            <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700">
+              <h2 className="text-2xl font-bold text-white mb-4">{t.title}</h2>
+              <p className="text-slate-400 mb-6">
+                {t.subtitle} 
+                <span className="text-red-400 font-bold ml-1">{t.warning}</span>
+              </p>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-700 text-slate-400 text-sm uppercase tracking-wider">
+                      <th className="p-4">{t.system}</th>
+                      <th className="p-4">{t.sheet}</th>
+                      <th className="p-4 hidden sm:table-cell">{t.part}</th>
+                      <th className="p-4">{t.capacity}</th>
+                      <th className="p-4 hidden md:table-cell">{t.notes}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-700">
+                    {FLUID_DATA.map((fluid) => (
+                      <tr key={fluid.id} className="hover:bg-slate-700/30 transition-colors">
+                        <td className="p-4 font-medium text-blue-300">{fluid.system}</td>
+                        <td className="p-4">
+                          <span className="bg-slate-900 px-2 py-1 rounded text-sm font-mono text-emerald-400 border border-slate-600">
+                            {fluid.code}
+                          </span>
+                        </td>
+                        <td className="p-4 hidden sm:table-cell text-slate-300 font-mono text-sm">{fluid.partNumber}</td>
+                        <td className="p-4 text-slate-300">{fluid.capacity}</td>
+                        <td className="p-4 hidden md:table-cell text-sm text-slate-400">{fluid.notes}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl">
+                  <h3 className="font-bold text-white text-lg mb-2">{t.bevoTitle}</h3>
+                  <p className="text-slate-400 text-sm">{t.bevoText}</p>
+              </div>
+               <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl">
+                  <h3 className="font-bold text-white text-lg mb-2">{t.adblueTitle}</h3>
+                  <p className="text-slate-400 text-sm">{t.adblueText}</p>
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+      // 4. FAULTS LIST
+      const FaultsList = ({ lang }) => {
+        const [searchTerm, setSearchTerm] = useState('');
+        const [selectedFault, setSelectedFault] = useState(null);
+
+        const t = {
+          title: lang === 'en' ? 'Interactive Diagnostic Tool' : 'İnteraktif Arıza Teşhis',
+          subtitle: lang === 'en' 
+            ? 'Enter your P-Code or symptom below to analyze OM642 specific faults.' 
+            : 'OM642\'ye özgü arızaları analiz etmek için P-Kodunuzu veya belirtiyi girin.',
+          placeholder: lang === 'en' ? 'Enter Code (e.g. P2015)...' : 'Kod Girin (örn. P2015)...',
+          analyze: lang === 'en' ? 'Analyze Code' : 'Kodu Analiz Et',
+          possibleCauses: lang === 'en' ? 'Root Cause Analysis' : 'Kök Neden Analizi',
+          solution: lang === 'en' ? 'Repair Strategy' : 'Onarım Stratejisi',
+          severity: lang === 'en' ? 'Severity' : 'Ciddiyet',
+          noResults: lang === 'en' ? 'No exact match found in database.' : 'Veritabanında tam eşleşme bulunamadı.',
+          tryAI: lang === 'en' ? 'Ask the AI Mechanic for help.' : 'Yapay Zeka Uzmana danışın.',
+        };
+
+        const FAULT_DATABASE = [
+          {
+            code: 'P2015',
+            description: 'Intake Manifold Runner Position Sensor Range/Performance',
+            possibleCauses: [
+              'Swirl Flap Motor (M55) internal failure due to oil ingress.',
+              'Plastic linkage arms snapped.',
+              'Intake manifold flaps carbonized and stuck.'
+            ],
+            solution: '1. Inspect M55 motor. 2. If oily, replace Turbo Intake Seal (A6420940080). 3. Replace M55 motor. 4. If flaps stuck, clean manifold or replace.',
+            severity: 'Medium'
+          },
+          {
+            code: 'P0299',
+            description: 'Turbocharger Underboost Condition',
+            possibleCauses: [
+              'Boost leak (Intercooler hoses, O-rings).',
+              'Electronic Turbo Actuator (Hella) worm gear worn.',
+              'Exhaust Backpressure Sensor blocked.'
+            ],
+            solution: '1. Smoke test intake system. 2. Inspect green O-ring on turbo outlet. 3. Check Actuator arm movement.',
+            severity: 'High'
+          },
+          {
+            code: 'P2600',
+            description: 'Coolant Pump Control Circuit / Open',
+            possibleCauses: [
+              'Auxiliary Water Pump (for Turbo cooling) failed.',
+              'Wiring harness break.',
+              'Fuse blown.'
+            ],
+            solution: 'Replace the small electric auxiliary water pump located near the expansion tank or firewall. This is critical for cooling the turbo after shutdown.',
+            severity: 'Medium'
+          },
+          {
+            code: 'P0471',
+            description: 'Exhaust Pressure Sensor Range/Performance',
+            possibleCauses: [
+              'Exhaust Backpressure Sensor (EBP) clogged with soot.',
+              'Wiring issue.',
+              'Vacuum leak.'
+            ],
+            solution: 'Remove EBP sensor (near turbo/EGR). Clean carefully with brake cleaner or replace (Part A0071530328).',
+            severity: 'Medium'
+          },
+          {
+            code: '5200',
+            description: 'Airmatic: Compressor Run Time Exceeded',
+            possibleCauses: [
+              'Air leak in struts/bags.',
+              'Compressor piston ring worn out.',
+              'Relay stuck closed.'
+            ],
+            solution: '1. Replace Airmatic Relay (Hella) immediately to save pump. 2. Soap test strut tops. 3. If pump weak, replace compressor.',
+            severity: 'Critical'
+          },
+          {
+            code: 'P2002',
+            description: 'DPF Efficiency Below Threshold',
+            possibleCauses: [
+              'DPF Ash accumulation > 100%.',
+              'Differential Pressure Sensor faulty.',
+              'Thermostat stuck open.'
+            ],
+            solution: '1. Check engine temp (>80°C). 2. Check Diff Pressure Sensor. 3. Manual regen via Xentry. 4. DPF cleaning.',
+            severity: 'High'
+          }
+        ];
+
+        const handleSearch = () => {
+          if (!searchTerm) return;
+          const found = FAULT_DATABASE.find(
+            f => f.code.toLowerCase() === searchTerm.toLowerCase() || 
+            f.description.toLowerCase().includes(searchTerm.toLowerCase())
+          );
+          setSelectedFault(found || null);
+        };
+
+        return (
+          <div className="max-w-4xl mx-auto space-y-8 animate-fade-in">
+            <div className="text-center space-y-4">
+              <div className="inline-flex items-center justify-center p-4 bg-blue-600/20 rounded-full mb-2">
+                  <Activity className="h-8 w-8 text-blue-500" />
+              </div>
+              <h2 className="text-3xl font-bold text-white">{t.title}</h2>
+              <p className="text-slate-400 max-w-2xl mx-auto">{t.subtitle}</p>
+            </div>
+
+            <div className="bg-slate-800 rounded-xl p-6 border border-slate-700 shadow-xl">
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 h-5 w-5" />
+                  <input 
+                    type="text"
+                    placeholder={t.placeholder}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value.toUpperCase())}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                    className="w-full pl-12 pr-4 py-4 bg-slate-900 border border-slate-600 rounded-lg text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono text-lg tracking-wider"
+                  />
+                </div>
+                <button 
+                  onClick={handleSearch}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2"
+                >
+                  <PenTool className="h-5 w-5" />
+                  {t.analyze}
+                </button>
+              </div>
+            </div>
+
+            {searchTerm && !selectedFault && (
+                <div className="text-center py-12 bg-slate-800/30 rounded-xl border border-slate-800 border-dashed">
+                   <AlertTriangle className="h-12 w-12 text-slate-600 mx-auto mb-3" />
+                   <p className="text-slate-400 font-medium">{t.noResults}</p>
+                   <p className="text-sm text-slate-500 mt-2">{t.tryAI}</p>
+                </div>
+            )}
+
+            {selectedFault && (
+              <div className="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden shadow-2xl animate-fade-in">
+                <div className={`p-1 w-full ${
+                  selectedFault.severity === 'Critical' ? 'bg-red-500' :
+                  selectedFault.severity === 'High' ? 'bg-orange-500' :
+                  'bg-blue-500'
+                }`}></div>
+                
+                <div className="p-8">
+                  <div className="flex items-start justify-between mb-8 border-b border-slate-800 pb-6">
+                    <div>
+                      <div className="flex items-center gap-3 mb-2">
+                          <span className="text-3xl font-mono font-bold text-white tracking-widest">{selectedFault.code}</span>
+                          <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                               selectedFault.severity === 'Critical' ? 'bg-red-500/20 text-red-400 border border-red-500/50' :
+                               selectedFault.severity === 'High' ? 'bg-orange-500/20 text-orange-400 border border-orange-500/50' :
+                               'bg-blue-500/20 text-blue-400 border border-blue-500/50'
+                          }`}>
+                              {selectedFault.severity}
+                          </span>
+                      </div>
+                      <h3 className="text-xl text-slate-300">{selectedFault.description}</h3>
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-8">
+                    <div className="bg-slate-800/50 p-6 rounded-lg border border-slate-700">
+                      <h4 className="text-sm font-bold text-amber-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <AlertTriangle className="h-4 w-4" /> {t.possibleCauses}
+                      </h4>
+                      <ul className="space-y-3">
+                        {selectedFault.possibleCauses.map((cause, idx) => (
+                          <li key={idx} className="flex items-start gap-3 text-slate-300">
+                            <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-2"></span>
+                            {cause}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div className="bg-blue-900/10 p-6 rounded-lg border border-blue-900/30">
+                       <h4 className="text-sm font-bold text-blue-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4" /> {t.solution}
+                      </h4>
+                      <p className="text-slate-300 leading-relaxed">
+                        {selectedFault.solution}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      };
+
+      // 5. ASSISTANT
+      const Assistant = ({ lang }) => {
+        const [messages, setMessages] = useState([]);
+        const [input, setInput] = useState('');
+        const [isLoading, setIsLoading] = useState(false);
+        const [userApiKey, setUserApiKey] = useState('');
+        const messagesEndRef = useRef(null);
+
+        useEffect(() => {
+          const greeting = lang === 'en' 
+            ? "Greetings. I am your W164 Master Technician. How can I assist with your Mercedes-Benz today?"
+            : "Merhaba. Ben W164 Uzman Teknisyeninizim. Bugün Mercedes-Benz'inizle ilgili size nasıl yardımcı olabilirim?";
+          
+          setMessages([{
+            role: 'model',
+            text: greeting,
+            timestamp: new Date()
+          }]);
+        }, [lang]);
+
+        const scrollToBottom = () => {
+          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        };
+
+        useEffect(() => {
+          scrollToBottom();
+        }, [messages]);
+
+        const handleSend = async () => {
+          if (!input.trim() || isLoading) return;
+          if (!userApiKey) {
+             alert(lang === 'en' ? 'Please enter your Gemini API Key first.' : 'Lütfen önce Gemini API Anahtarınızı girin.');
+             return;
+          }
+
+          const userMsg = { role: 'user', text: input, timestamp: new Date() };
+          setMessages(prev => [...prev, userMsg]);
+          setInput('');
+          setIsLoading(true);
+
+          try {
+            const history = messages.map(m => ({
+              role: m.role,
+              parts: [{ text: m.text }]
+            }));
+
+            // Pass the userApiKey to the helper
+            const responseText = await sendMessageToExpert(input, history, lang, userApiKey);
+            
+            const botMsg = { 
+              role: 'model', 
+              text: responseText, 
+              timestamp: new Date() 
+            };
+            setMessages(prev => [...prev, botMsg]);
+          } catch (error) {
+            const errorMsg = {
+              role: 'model',
+              text: lang === 'en' 
+                ? "I apologize, my diagnostic system is currently offline." 
+                : "Üzgünüm, teşhis sistemim şu anda çevrimdışı.",
+              timestamp: new Date()
+            };
+            setMessages(prev => [...prev, errorMsg]);
+          } finally {
+            setIsLoading(false);
+          }
+        };
+
+        const handleKeyDown = (e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSend();
+          }
+        };
+
+        return (
+          <div className="h-[600px] flex flex-col bg-slate-900 border border-slate-700 rounded-xl overflow-hidden shadow-2xl">
+            <div className="bg-slate-800 p-4 border-b border-slate-700 flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="bg-blue-600 p-2 rounded-full">
+                    <Bot className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-white font-bold">MB Master Tech AI</h3>
+                    <p className="text-xs text-blue-400">Powered by Gemini | OM642 Specialist</p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* API Key Input for GitHub Pages */}
+              <div className="bg-slate-900/80 p-3 rounded-lg border border-slate-700 flex items-center gap-2">
+                 <Lock className="h-4 w-4 text-amber-500" />
+                 <input 
+                    type="password" 
+                    value={userApiKey}
+                    onChange={(e) => setUserApiKey(e.target.value)}
+                    placeholder={lang === 'en' ? "Paste Gemini API Key here to activate..." : "Gemini API Anahtarını buraya yapıştır..."}
+                    className="bg-transparent border-none text-xs text-white w-full focus:ring-0 placeholder-slate-500"
+                 />
+                 <a href="https://aistudio.google.com/app/apikey" target="_blank" className="text-[10px] text-blue-400 whitespace-nowrap hover:underline">
+                    {lang === 'en' ? 'Get Key' : 'Anahtar Al'}
+                 </a>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-900/50">
+              {messages.map((msg, idx) => (
+                <div 
+                  key={idx} 
+                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div 
+                    className={`max-w-[85%] rounded-2xl p-4 ${
+                      msg.role === 'user' 
+                        ? 'bg-blue-600 text-white rounded-br-none' 
+                        : 'bg-slate-800 text-slate-200 border border-slate-700 rounded-bl-none'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-1 opacity-50 text-xs">
+                       {msg.role === 'user' ? <User className="h-3 w-3" /> : <Bot className="h-3 w-3" />}
+                       <span>{msg.role === 'user' ? (lang === 'en' ? 'You' : 'Siz') : (lang === 'en' ? 'Expert' : 'Uzman')}</span>
+                    </div>
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed">{msg.text}</p>
+                  </div>
+                </div>
+              ))}
+              {isLoading && (
+                <div className="flex justify-start">
+                  <div className="bg-slate-800 rounded-2xl rounded-bl-none p-4 border border-slate-700">
+                     <div className="flex items-center gap-2 text-slate-400 text-sm">
+                       <Loader2 className="h-4 w-4 animate-spin" />
+                       <span>{lang === 'en' ? 'Analyzing diagnostics...' : 'Arıza analiz ediliyor...'}</span>
+                     </div>
+                  </div>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+
+            <div className="p-4 bg-slate-800 border-t border-slate-700">
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder={lang === 'en' ? "Ask about oil leaks, limp mode..." : "Yağ kaçakları, koruma modu hakkında sorun..."}
+                  className="flex-1 bg-slate-900 border border-slate-600 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder-slate-500"
+                  disabled={isLoading}
+                />
+                <button 
+                  onClick={handleSend}
+                  disabled={isLoading || !input.trim()}
+                  className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white p-3 rounded-lg transition-colors"
+                >
+                  <Send className="h-5 w-5" />
+                </button>
+              </div>
+              <p className="text-center text-[10px] text-slate-500 mt-2">
+                 {lang === 'en' ? 'AI can make mistakes. Verify with WIS.' : 'Yapay zeka hata yapabilir. WIS ile doğrulayın.'}
+              </p>
+            </div>
+          </div>
+        );
+      };
+
+      // 6. MODELS SECTION
+      const ModelsSection = ({ lang }) => {
+        const t = {
+          title: lang === 'en' ? 'W164 Model Encyclopedia' : 'W164 Model Ansiklopedisi',
+          subtitle: lang === 'en' 
+            ? 'Detailed specifications for OM642 powered ML-Class vehicles' 
+            : 'OM642 motorlu ML-Serisi araçlar için detaylı teknik özellikler',
+          engineCode: lang === 'en' ? 'Engine Code' : 'Motor Kodu',
+          power: lang === 'en' ? 'Power' : 'Güç',
+          torque: lang === 'en' ? 'Torque' : 'Tork',
+          years: lang === 'en' ? 'Production' : 'Üretim Yılları',
+          features: lang === 'en' ? 'Key Features' : 'Önemli Özellikler',
+        };
+
+        const models = [
+          {
+            name: 'ML 280 CDI',
+            years: '2005 - 2009',
+            engineCode: 'OM642.940',
+            power: '190 PS (140 kW)',
+            torque: '440 Nm',
+            desc_en: 'The entry-level V6 diesel. Mechanically identical to the 320 CDI but software de-tuned.',
+            desc_tr: 'Giriş seviyesi V6 dizel. Mekanik olarak 320 CDI ile aynıdır ancak gücü yazılımla düşürülmüştür.',
+            features_en: ['No AdBlue system', 'Standard coil springs', '17-inch wheels standard'],
+            features_tr: ['AdBlue sistemi yok', 'Standart yaylı süspansiyon', '17 inç jantlar standart']
+          },
+          {
+            name: 'ML 320 CDI',
+            years: '2005 - 2009',
+            engineCode: 'OM642.940',
+            power: '224 PS (165 kW)',
+            torque: '510 Nm',
+            desc_en: 'The most popular pre-facelift diesel. Known for robust performance but prone to early seal leaks.',
+            desc_tr: 'Makyaj öncesi en popüler dizel. Güçlü performansıyla bilinir ancak conta kaçaklarına yatkındır.',
+            features_en: ['Often equipped with Off-Road package', '7G-Tronic Pre-Plus', 'DPF standard in most regions'],
+            features_tr: ['Genellikle Off-Road paketi ile', '7G-Tronic Pre-Plus', 'Çoğu bölgede DPF standart']
+          },
+          {
+            name: 'ML 300 CDI BlueEfficiency',
+            years: '2009 - 2011',
+            engineCode: 'OM642.820',
+            power: '204 PS (150 kW)',
+            torque: '500 Nm',
+            desc_en: 'Facelift version of the 280 CDI. Improved fuel efficiency. Features newer mirrors, headlights.',
+            desc_tr: '280 CDI\'nın makyajlı versiyonu. Yakıt verimliliği artırılmış. Yeni aynalar ve farlar içerir.',
+            features_en: ['Updated telematics (NTG 2.5)', 'LED taillights', 'Improved fuel economy'],
+            features_tr: ['Güncellenmiş telematik (NTG 2.5)', 'LED stoplar', 'Geliştirilmiş yakıt ekonomisi']
+          },
+          {
+            name: 'ML 350 CDI',
+            years: '2009 - 2011',
+            engineCode: 'OM642.822',
+            power: '224 PS / 231 PS',
+            torque: '540 Nm',
+            desc_en: 'The rebranding of the 320 CDI for the facelift era. Late 2010 models received a power bump.',
+            desc_tr: 'Makyajlı dönemde 320 CDI\'nın yeni adı. 2010 sonu modelleri daha güçlüdür.',
+            features_en: ['Peak W164 refinement', 'Often high spec', 'Revised turbocharger actuator'],
+            features_tr: ['W164\'ün en rafine hali', 'Yüksek donanım', 'Revize edilmiş turbo aktüatörü']
+          },
+          {
+            name: 'ML 350 BlueTEC',
+            years: '2009 - 2011',
+            engineCode: 'OM642.820',
+            power: '211 PS (155 kW)',
+            torque: '540 Nm',
+            desc_en: 'Introduced AdBlue (DEF) injection. Complex exhaust system requires specific maintenance.',
+            desc_tr: 'AdBlue (DEF) enjeksiyonu eklendi. Karmaşık egzoz sistemi özel bakım gerektirir.',
+            features_en: ['AdBlue Tank in trunk', 'Run-flat tires standard', 'Cleanest emissions'],
+            features_tr: ['Bagajda AdBlue Deposu', 'Run-flat lastikler', 'En temiz emisyon']
+          }
+        ];
+
+        return (
+          <div className="space-y-8 animate-fade-in pb-12">
+            <div className="mb-8">
+              <h2 className="text-3xl font-bold text-white mb-2">{t.title}</h2>
+              <p className="text-slate-400">{t.subtitle}</p>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {models.map((model, idx) => (
+                <div key={idx} className="bg-slate-800/50 border border-slate-700 rounded-xl overflow-hidden hover:border-blue-500/50 transition-all group">
+                  <div className="h-2 bg-gradient-to-r from-blue-600 to-blue-400"></div>
+                  <div className="p-6">
+                    <div className="flex justify-between items-start mb-4">
+                      <h3 className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors">{model.name}</h3>
+                      <span className="bg-slate-900 text-slate-400 text-xs px-2 py-1 rounded border border-slate-700 font-mono">
+                        {model.engineCode}
+                      </span>
+                    </div>
+                    
+                    <div className="space-y-3 mb-6">
+                      <div className="flex items-center gap-3 text-sm text-slate-300">
+                        <Calendar className="h-4 w-4 text-blue-500" />
+                        <span>{t.years}: <span className="font-semibold text-white">{model.years}</span></span>
+                      </div>
+                      <div className="flex items-center gap-3 text-sm text-slate-300">
+                        <Gauge className="h-4 w-4 text-emerald-500" />
+                        <span>{t.power}: <span className="font-semibold text-white">{model.power}</span></span>
+                      </div>
+                      <div className="flex items-center gap-3 text-sm text-slate-300">
+                        <Cog className="h-4 w-4 text-amber-500" />
+                        <span>{t.torque}: <span className="font-semibold text-white">{model.torque}</span></span>
+                      </div>
+                    </div>
+
+                    <div className="mb-4">
+                      <p className="text-sm text-slate-400 italic">
+                        "{lang === 'en' ? model.desc_en : model.desc_tr}"
+                      </p>
+                    </div>
+
+                    <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">
+                      <h4 className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+                        <BadgeInfo className="h-3 w-3" /> {t.features}
+                      </h4>
+                      <ul className="space-y-1">
+                        {(lang === 'en' ? model.features_en : model.features_tr).map((feature, i) => (
+                          <li key={i} className="text-xs text-slate-300 flex items-start gap-1.5">
+                            <span className="w-1 h-1 bg-slate-500 rounded-full mt-1.5"></span>
+                            {feature}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      };
+
+      // 7. APP MAIN COMPONENT
+      const App = () => {
+        const [currentPage, setCurrentPage] = useState(PageView.HOME);
+        const [lang, setLang] = useState('en');
+
+        const renderContent = () => {
+          switch (currentPage) {
+            case PageView.MODELS:
+              return <ModelsSection lang={lang} />;
+            case PageView.ENGINE:
+              return <EngineSection />;
+            case PageView.FLUIDS:
+              return <FluidTable lang={lang} />;
+            case PageView.FAULTS:
+              return <FaultsList lang={lang} />;
+            case PageView.ASSISTANT:
+              return (
+                <div className="max-w-4xl mx-auto animate-fade-in">
+                   <div className="mb-6">
+                      <h2 className="text-2xl font-bold text-white mb-2">
+                        {lang === 'en' ? 'Virtual Master Technician' : 'Sanal Usta Teknisyen'}
+                      </h2>
+                      <p className="text-slate-400">
+                          {lang === 'en' 
+                            ? 'Use this tool to ask complex questions not covered in the static guides. The AI is trained to act as a Mercedes-Benz specialist.'
+                            : 'Statik kılavuzlarda kapsanmayan karmaşık soruları sormak için bu aracı kullanın. Yapay zeka Mercedes-Benz uzmanı olarak eğitilmiştir.'}
+                      </p>
+                   </div>
+                   <Assistant lang={lang} />
+                </div>
+              );
+            case PageView.HOME:
+            default:
+              return (
+                <div className="space-y-12 animate-fade-in">
+                  {/* Hero Section */}
+                  <div className="relative rounded-2xl overflow-hidden border border-slate-700 shadow-2xl bg-slate-900 h-96">
+                      <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/70 to-transparent z-10"></div>
+                      <img 
+                          src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Mercedes_ML_320_CDI_W164_Facelift_front_20100403.jpg/1280px-Mercedes_ML_320_CDI_W164_Facelift_front_20100403.jpg"
+                          onError={(e) => {
+                            e.currentTarget.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/2007_Mercedes-Benz_ML320_CDI_--_01-22-2010.jpg/1280px-2007_Mercedes-Benz_ML320_CDI_--_01-22-2010.jpg";
+                          }}
+                          alt="Mercedes-Benz ML W164" 
+                          className="w-full h-full object-cover opacity-80"
+                      />
+                      <div className="absolute inset-0 z-20 flex flex-col justify-center px-8 md:px-12">
+                          <div className="inline-flex items-center gap-2 bg-blue-600/20 border border-blue-500/30 text-blue-400 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest mb-4 w-fit">
+                              W164 Platform • 2005-2011
+                          </div>
+                          <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 tracking-tight drop-shadow-lg">
+                              {lang === 'en' ? 'The Definitive' : 'En Kapsamlı'} <br/>
+                              <span className="text-blue-500">ML-Class</span> {lang === 'en' ? 'Guide' : 'Rehberi'}
+                          </h1>
+                          <p className="text-lg text-slate-200 max-w-xl mb-8 drop-shadow-md">
+                              {lang === 'en' 
+                                ? 'Comprehensive technical data, common faults, and expert maintenance advice for the Mercedes-Benz ML (W164) and OM642 Diesel Engine.'
+                                : 'Mercedes-Benz ML (W164) ve OM642 Dizel Motor için kapsamlı teknik veriler, yaygın arızalar ve uzman bakım tavsiyeleri.'}
+                          </p>
+                          <div className="flex flex-wrap gap-4">
+                              <button 
+                                  onClick={() => setCurrentPage(PageView.MODELS)}
+                                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-all shadow-lg shadow-blue-900/50"
+                              >
+                                  {lang === 'en' ? 'Encyclopedia' : 'Ansiklopedi'} <BookOpen className="h-4 w-4" />
+                              </button>
+                              <button 
+                                   onClick={() => setCurrentPage(PageView.FAULTS)}
+                                  className="bg-slate-800/80 hover:bg-slate-700 text-white border border-slate-600 px-6 py-3 rounded-lg font-medium transition-all backdrop-blur-sm"
+                              >
+                                  {lang === 'en' ? 'Diagnostic Tool' : 'Arıza Teşhis'}
+                              </button>
+                          </div>
+                      </div>
+                  </div>
+
+                  {/* Quick Stats Grid */}
+                  <div className="grid md:grid-cols-3 gap-6">
+                      <div className="bg-slate-800/80 backdrop-blur-sm p-6 rounded-xl border border-slate-700 hover:border-blue-500/50 transition-colors shadow-lg">
+                          <ShieldCheck className="h-10 w-10 text-emerald-500 mb-4" />
+                          <h3 className="text-xl font-bold text-white mb-2">{lang === 'en' ? 'Reliability Mods' : 'Dayanıklılık Modları'}</h3>
+                          <p className="text-slate-400 text-sm leading-relaxed">
+                              {lang === 'en' 
+                                ? 'Learn about critical preventative maintenance: Oil Cooler Seals, Swirl Flap Motors, and Black Death prevention.'
+                                : 'Kritik önleyici bakım hakkında bilgi edinin: Yağ Soğutucu Contaları, Girdap Kapak Motorları ve Kara Ölüm önleme.'}
+                          </p>
+                      </div>
+                      <div className="bg-slate-800/80 backdrop-blur-sm p-6 rounded-xl border border-slate-700 hover:border-blue-500/50 transition-colors shadow-lg">
+                          <Wrench className="h-10 w-10 text-amber-500 mb-4" />
+                          <h3 className="text-xl font-bold text-white mb-2">{lang === 'en' ? 'Technical Specs' : 'Teknik Özellikler'}</h3>
+                          <p className="text-slate-400 text-sm leading-relaxed">
+                              {lang === 'en' 
+                                ? 'Exact fluid capacities, torque specifications, and MB Sheet numbers (229.51, 236.14) for DIY service.'
+                                : 'DIY servis için tam sıvı kapasiteleri, tork spesifikasyonları ve MB Sayfa numaraları (229.51, 236.14).'}
+                          </p>
+                      </div>
+                      <div className="bg-slate-800/80 backdrop-blur-sm p-6 rounded-xl border border-slate-700 hover:border-blue-500/50 transition-colors shadow-lg">
+                          <div className="h-10 w-10 text-blue-500 mb-4 font-mono text-3xl font-bold">AI</div>
+                          <h3 className="text-xl font-bold text-white mb-2">{lang === 'en' ? 'Interactive Diagnosis' : 'İnteraktif Teşhis'}</h3>
+                          <p className="text-slate-400 text-sm leading-relaxed">
+                              {lang === 'en' 
+                                ? 'Not sure what that code means? Chat with our fine-tuned Gemini model trained on Mercedes workshop logic.'
+                                : 'Bu kodun ne anlama geldiğinden emin değil misiniz? Mercedes atölye mantığıyla eğitilmiş Gemini modelimizle sohbet edin.'}
+                          </p>
+                      </div>
+                  </div>
+                  
+                  <div className="text-center pt-8 border-t border-slate-800 text-slate-500 text-sm">
+                      <p>{lang === 'en' ? 'Designed for Enthusiasts. Not affiliated with Mercedes-Benz Group AG.' : 'Meraklılar için tasarlanmıştır. Mercedes-Benz Group AG ile bağlantısı yoktur.'}</p>
+                      <p className="mt-2 font-mono text-xs">W164 EXPERT v1.2.0 (Single File Edition)</p>
+                  </div>
+                </div>
+              );
+          }
+        };
+
+        return (
+          <div className="min-h-screen bg-mb-dark text-slate-200 relative overflow-hidden">
+            {/* Background Image Layer */}
+            <div className="fixed inset-0 z-0">
+               <img 
+                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Mercedes_M-Klasse_W164_front_20071030.jpg/1280px-Mercedes_M-Klasse_W164_front_20071030.jpg"
+                  alt="Mercedes ML Background"
+                  className="w-full h-full object-cover opacity-10 blur-sm grayscale"
+               />
+               <div className="absolute inset-0 bg-mb-dark/90 mix-blend-multiply"></div>
+            </div>
+
+            <div className="relative z-10">
+              <Navbar currentPage={currentPage} onNavigate={setCurrentPage} lang={lang} setLang={setLang} />
+              
+              <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {renderContent()}
+              </main>
+            </div>
+          </div>
+        );
+      };
+
+      // --- MOUNT ---
+      const rootElement = document.getElementById('root');
+      if (rootElement) {
+        const root = createRoot(rootElement);
+        root.render(<App />);
+      }
+    </script>
   <script type="module" src="/index.tsx"></script>
 </body>
 </html>
