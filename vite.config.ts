@@ -4,5 +4,5 @@ import react from '@vitejs/plugin-react'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/mlexpert/', // GitHub Pages deployment path
+  base: '/MLexpert/', // GitHub Pages deployment path (Case sensitive!)
 })
