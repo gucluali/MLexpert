@@ -1,6 +1,6 @@
 import React from 'react';
 import { PageView, Language } from '../types';
-import { Wrench, Droplet, AlertTriangle, Cpu, Car, BookOpen, Languages } from 'lucide-react';
+import { Wrench, Droplet, AlertTriangle, Cpu, Car, BookOpen, Languages, Search, LifeBuoy } from 'lucide-react';
 
 interface NavbarProps {
   currentPage: PageView;
@@ -16,14 +16,18 @@ const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, lang, setLang 
       models: 'Encyclopedia',
       engine: 'OM642 Engine',
       fluids: 'Fluids & Specs',
-      faults: 'Diagnostics'
+      faults: 'Diagnostics',
+      parts: 'Part Finder',
+      guide: 'Owner Guide'
     },
     tr: {
       overview: 'Özet',
       models: 'Ansiklopedi',
       engine: 'OM642 Motor',
       fluids: 'Sıvılar & Spek',
-      faults: 'Arıza Teşhis'
+      faults: 'Arıza Teşhis',
+      parts: 'Parça Bulucu',
+      guide: 'Kullanım Rehberi'
     }
   };
 
@@ -33,8 +37,10 @@ const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, lang, setLang 
     { id: PageView.HOME, label: t.overview, icon: Car },
     { id: PageView.MODELS, label: t.models, icon: BookOpen },
     { id: PageView.ENGINE, label: t.engine, icon: Cpu },
+    { id: PageView.PARTS, label: t.parts, icon: Search },
     { id: PageView.FLUIDS, label: t.fluids, icon: Droplet },
     { id: PageView.FAULTS, label: t.faults, icon: AlertTriangle },
+    { id: PageView.GUIDE, label: t.guide, icon: LifeBuoy },
   ];
 
   return (
@@ -50,8 +56,8 @@ const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, lang, setLang 
             </span>
           </div>
           
-          <div className="hidden md:flex items-center gap-4">
-            <div className="flex items-baseline space-x-2">
+          <div className="hidden lg:flex items-center gap-4">
+            <div className="flex items-baseline space-x-1">
               {navItems.map((item) => (
                 <button
                   key={item.id}
@@ -80,7 +86,7 @@ const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, lang, setLang 
           </div>
 
           {/* Mobile Lang Toggle */}
-          <div className="md:hidden flex items-center">
+          <div className="lg:hidden flex items-center">
              <button
               onClick={() => setLang(lang === 'en' ? 'tr' : 'en')}
               className="flex items-center gap-1 px-3 py-2 rounded-md bg-slate-800 text-slate-300"
@@ -92,13 +98,13 @@ const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, lang, setLang 
       </div>
       
       {/* Mobile Navigation Bar (Bottom) */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-700 pb-safe z-50">
-        <div className="flex justify-around py-3 overflow-x-auto">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-700 pb-safe z-50">
+        <div className="flex justify-around py-3 overflow-x-auto no-scrollbar">
           {navItems.map((item) => (
             <button
               key={item.id}
               onClick={() => onNavigate(item.id)}
-              className={`flex flex-col items-center gap-1 min-w-[60px] ${
+              className={`flex flex-col items-center gap-1 min-w-[70px] ${
                 currentPage === item.id ? 'text-blue-500' : 'text-slate-400'
               }`}
             >

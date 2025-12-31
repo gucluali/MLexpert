@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FaultCode, Language } from '../types';
-import { Search, AlertTriangle, Activity, PenTool, CheckCircle } from 'lucide-react';
+import { Search, AlertTriangle, Activity, PenTool, CheckCircle, BarChart3 } from 'lucide-react';
 
 interface FaultsListProps {
   lang: Language;
@@ -21,77 +21,155 @@ const FaultsList: React.FC<FaultsListProps> = ({ lang }) => {
     solution: lang === 'en' ? 'Repair Strategy' : 'Onarım Stratejisi',
     severity: lang === 'en' ? 'Severity' : 'Ciddiyet',
     noResults: lang === 'en' ? 'No exact match found in database.' : 'Veritabanında tam eşleşme bulunamadı.',
+    frequencyTitle: lang === 'en' ? 'W164 OM642 Failure Frequency Index' : 'W164 OM642 Arıza Sıklık Endeksi',
+    highFreq: lang === 'en' ? 'Very Common' : 'Çok Yaygın',
+    medFreq: lang === 'en' ? 'Common' : 'Yaygın',
+    lowFreq: lang === 'en' ? 'Occasional' : 'Nadir',
   };
 
-  // Expanded database for OM642
+  // Expanded database for OM642 with Bilingual support
   const FAULT_DATABASE: FaultCode[] = [
     {
       code: 'P2015',
-      description: 'Intake Manifold Runner Position Sensor Range/Performance',
-      possibleCauses: [
+      description: lang === 'en' 
+        ? 'Intake Manifold Runner Position Sensor Range/Performance' 
+        : 'Emme Manifoldu Klape Pozisyon Sensörü Hatası',
+      possibleCauses: lang === 'en' ? [
         'Swirl Flap Motor (M55) internal failure due to oil ingress.',
         'Plastic linkage arms snapped.',
         'Intake manifold flaps carbonized and stuck.'
+      ] : [
+        'Girdap Kapak Motoru (M55) yağ alması nedeniyle iç arıza.',
+        'Plastik bağlantı kolları kırık.',
+        'Emme manifoldu klapeleri kurumlanmış ve sıkışmış.'
       ],
-      solution: '1. Inspect M55 motor (under turbo intake). 2. If oily, replace Turbo Intake Seal (A6420940080). 3. Replace M55 motor. 4. If flaps stuck, clean manifold or replace.',
+      solution: lang === 'en' 
+        ? '1. Inspect M55 motor (under turbo intake). 2. If oily, replace Turbo Intake Seal (A6420940080). 3. Replace M55 motor. 4. If flaps stuck, clean manifold or replace.' 
+        : '1. M55 motorunu kontrol edin (turbo emiş altı). 2. Yağlıysa Turbo Emiş Contasını değiştirin (A6420940080). 3. M55 motorunu değiştirin. 4. Klapeler sıkışmışsa manifoldu temizleyin veya değiştirin.',
       severity: 'Medium'
     },
     {
       code: 'P0299',
-      description: 'Turbocharger Underboost Condition',
-      possibleCauses: [
+      description: lang === 'en' 
+        ? 'Turbocharger Underboost Condition' 
+        : 'Turboşarj Düşük Basınç Durumu',
+      possibleCauses: lang === 'en' ? [
         'Boost leak (Intercooler hoses, O-rings).',
         'Electronic Turbo Actuator (Hella) worm gear worn.',
         'Exhaust Backpressure Sensor blocked.',
         'DPF Clogged.'
+      ] : [
+        'Basınç kaçağı (Intercooler hortumları, O-ringler).',
+        'Elektronik Turbo Aktüatörü (Hella) dişlisi aşınmış.',
+        'Egzoz Geri Basınç Sensörü tıkalı.',
+        'DPF Tıkalı.'
       ],
-      solution: '1. Smoke test intake system. 2. Inspect green O-ring on turbo outlet. 3. Check Actuator arm movement. 4. Clean/Replace Backpressure sensor.',
+      solution: lang === 'en'
+        ? '1. Smoke test intake system. 2. Inspect green O-ring on turbo outlet. 3. Check Actuator arm movement. 4. Clean/Replace Backpressure sensor.'
+        : '1. Emme sistemine duman testi yapın. 2. Turbo çıkışındaki yeşil O-ringi kontrol edin. 3. Aktüatör kolu hareketini kontrol edin. 4. Geri Basınç sensörünü temizleyin/değiştirin.',
       severity: 'High'
     },
     {
       code: 'P2600',
-      description: 'Coolant Pump Control Circuit / Open',
-      possibleCauses: [
+      description: lang === 'en'
+        ? 'Coolant Pump Control Circuit / Open'
+        : 'Soğutma Pompası Kontrol Devresi / Açık',
+      possibleCauses: lang === 'en' ? [
         'Auxiliary Water Pump (for Turbo cooling) failed.',
         'Wiring harness break.',
         'Fuse blown.'
+      ] : [
+        'Yardımcı Su Pompası (Turbo soğutma için) arızalı.',
+        'Kablo tesisatı kopuk.',
+        'Sigorta atmış.'
       ],
-      solution: 'Replace the small electric auxiliary water pump located near the expansion tank or firewall. This is critical for cooling the turbo after shutdown.',
+      solution: lang === 'en'
+        ? 'Replace the small electric auxiliary water pump located near the expansion tank or firewall. This is critical for cooling the turbo after shutdown.'
+        : 'Genleşme tankı veya güvenlik duvarı yanındaki küçük elektrikli yardımcı su pompasını değiştirin. Bu, stop ettikten sonra turboyu soğutmak için kritiktir.',
       severity: 'Medium'
     },
     {
       code: 'P0471',
-      description: 'Exhaust Pressure Sensor Range/Performance',
-      possibleCauses: [
+      description: lang === 'en'
+        ? 'Exhaust Pressure Sensor Range/Performance'
+        : 'Egzoz Basınç Sensörü Aralığı/Performansı',
+      possibleCauses: lang === 'en' ? [
         'Exhaust Backpressure Sensor (EBP) clogged with soot.',
         'Wiring issue.',
         'Vacuum leak (if applicable).'
+      ] : [
+        'Egzoz Geri Basınç Sensörü (EBP) kurumla tıkanmış.',
+        'Kablo sorunu.',
+        'Vakum kaçağı (varsa).'
       ],
-      solution: 'Remove EBP sensor (near turbo/EGR). Clean carefully with brake cleaner or replace (Part A0071530328). Check port for carbon blockage.',
+      solution: lang === 'en'
+        ? 'Remove EBP sensor (near turbo/EGR). Clean carefully with brake cleaner or replace (Part A0071530328). Check port for carbon blockage.'
+        : 'EBP sensörünü sökün (turbo/EGR yanı). Balata spreyi ile dikkatlice temizleyin veya değiştirin (Parça A0071530328). Giriş portunu tıkanıklık için kontrol edin.',
       severity: 'Medium'
     },
     {
       code: '5200',
-      description: 'Airmatic: Compressor Run Time Exceeded',
-      possibleCauses: [
+      description: lang === 'en'
+        ? 'Airmatic: Compressor Run Time Exceeded'
+        : 'Airmatic: Kompresör Çalışma Süresi Aşıldı',
+      possibleCauses: lang === 'en' ? [
         'Air leak in struts/bags.',
         'Compressor piston ring worn out.',
         'Relay stuck closed (pump runs continuously).'
+      ] : [
+        'Süspansiyon körüklerinde hava kaçağı.',
+        'Kompresör piston segmanı aşınmış.',
+        'Röle kapalı takılı kalmış (pompa sürekli çalışıyor).'
       ],
-      solution: '1. Replace Airmatic Relay (Hella) immediately to save pump. 2. Soap test strut tops. 3. If pump weak, replace compressor.',
+      solution: lang === 'en'
+        ? '1. Replace Airmatic Relay (Hella) immediately to save pump. 2. Soap test strut tops. 3. If pump weak, replace compressor.'
+        : '1. Pompayı kurtarmak için Airmatic Rölesini (Hella) derhal değiştirin. 2. Amortisör kafalarına sabun testi yapın. 3. Pompa zayıfsa kompresörü değiştirin.',
       severity: 'Critical'
     },
     {
       code: 'P2002',
-      description: 'DPF Efficiency Below Threshold',
-      possibleCauses: [
+      description: lang === 'en'
+        ? 'DPF Efficiency Below Threshold'
+        : 'DPF Verimliliği Eşik Değerin Altında',
+      possibleCauses: lang === 'en' ? [
         'DPF Ash accumulation > 100%.',
         'Differential Pressure Sensor faulty.',
         'Thermostat stuck open (engine too cold to regen).'
+      ] : [
+        'DPF Kül birikimi > %100.',
+        'Fark Basınç Sensörü arızalı.',
+        'Termostat açık kalmış (motor rejenerasyon için çok soğuk).'
       ],
-      solution: '1. Check engine temp (must be >80°C). 2. Check Diff Pressure Sensor values. 3. Perform manual regeneration via Xentry. 4. DPF cleaning required.',
+      solution: lang === 'en'
+        ? '1. Check engine temp (must be >80°C). 2. Check Diff Pressure Sensor values. 3. Perform manual regeneration via Xentry. 4. DPF cleaning required.'
+        : '1. Motor sıcaklığını kontrol edin (>80°C olmalı). 2. Fark Basınç Sensörü değerlerini kontrol edin. 3. Xentry ile manuel rejenerasyon yapın. 4. DPF temizliği gerekir.',
       severity: 'High'
+    },
+    {
+      code: 'P0670',
+      description: lang === 'en'
+        ? 'Glow Plug Module Control Circuit'
+        : 'Kızdırma Bujisi Modülü Kontrol Devresi',
+      possibleCauses: lang === 'en' ? [
+        'Glow Plug Output Stage (GSE) internal failure.',
+        'Wiring harness short.'
+      ] : [
+        'Kızdırma Bujisi Beyni (GSE) iç arızası.',
+        'Kablo tesisatında kısa devre.'
+      ],
+      solution: lang === 'en'
+        ? 'Replace Glow Plug Control Module (GSE). Always check glow plugs resistance first; a bad plug can fry the new module.'
+        : 'Kızdırma Bujisi Beynini (GSE) değiştirin. Önce her zaman buji dirençlerini kontrol edin; bozuk bir buji yeni beyni yakabilir.',
+      severity: 'Medium'
     }
+  ];
+
+  const FREQUENCY_DATA = [
+    { label: lang === 'en' ? 'Oil Cooler Seals' : 'Yağ Soğutucu Contaları', pct: 95, color: 'bg-red-500' },
+    { label: lang === 'en' ? 'Glow Plug Module' : 'Kızdırma Beyni', pct: 80, color: 'bg-orange-500' },
+    { label: lang === 'en' ? 'M55 Swirl Motor' : 'M55 Girdap Motoru', pct: 75, color: 'bg-orange-500' },
+    { label: lang === 'en' ? 'Airmatic Air Bags' : 'Airmatic Körükleri', pct: 60, color: 'bg-yellow-500' },
+    { label: lang === 'en' ? 'Turbo Actuator' : 'Turbo Aktüatörü', pct: 40, color: 'bg-blue-500' },
   ];
 
   const handleSearch = () => {
@@ -111,6 +189,29 @@ const FaultsList: React.FC<FaultsListProps> = ({ lang }) => {
         </div>
         <h2 className="text-3xl font-bold text-white">{t.title}</h2>
         <p className="text-slate-400 max-w-2xl mx-auto">{t.subtitle}</p>
+      </div>
+
+      {/* FREQUENCY CHART */}
+      <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
+        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <BarChart3 className="text-emerald-500" /> {t.frequencyTitle}
+        </h3>
+        <div className="space-y-4">
+            {FREQUENCY_DATA.map((item, idx) => (
+                <div key={idx}>
+                    <div className="flex justify-between text-xs text-slate-400 mb-1">
+                        <span>{item.label}</span>
+                        <span>{item.pct}% {item.pct > 80 ? t.highFreq : item.pct > 50 ? t.medFreq : t.lowFreq}</span>
+                    </div>
+                    <div className="h-2 w-full bg-slate-900 rounded-full overflow-hidden">
+                        <div 
+                            className={`h-full ${item.color} transition-all duration-1000 ease-out`} 
+                            style={{ width: `${item.pct}%` }}
+                        ></div>
+                    </div>
+                </div>
+            ))}
+        </div>
       </div>
 
       {/* Interactive Input Section */}
