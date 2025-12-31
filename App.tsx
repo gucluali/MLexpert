@@ -6,6 +6,7 @@ import FaultsList from './components/FaultsList';
 import ModelsSection from './components/ModelsSection';
 import PartsFinder from './components/PartsFinder';
 import OwnershipSection from './components/OwnershipSection';
+import ServiceNetwork from './components/ServiceNetwork';
 import { PageView, Language } from './types';
 import { ShieldCheck, Wrench, BookOpen } from 'lucide-react';
 
@@ -27,6 +28,8 @@ const App: React.FC = () => {
         return <PartsFinder lang={lang} />;
       case PageView.GUIDE:
         return <OwnershipSection lang={lang} />;
+      case PageView.SERVICES:
+        return <ServiceNetwork lang={lang} />;
       case PageView.HOME:
       default:
         return (
@@ -97,7 +100,7 @@ const App: React.FC = () => {
             
             <div className="text-center pt-8 border-t border-slate-800 text-slate-500 text-sm">
                 <p>{lang === 'en' ? 'Designed for Enthusiasts. Not affiliated with Mercedes-Benz Group AG.' : 'Meraklılar için tasarlanmıştır. Mercedes-Benz Group AG ile bağlantısı yoktur.'}</p>
-                <p className="mt-2 font-mono text-xs">W164 EXPERT v1.5.0 (Global Edition)</p>
+                <p className="mt-2 font-mono text-xs">W164 EXPERT v1.6.0 (Service Network Edition)</p>
             </div>
           </div>
         );

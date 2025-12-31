@@ -29,7 +29,8 @@ export enum PageView {
   FLUIDS = 'FLUIDS',
   FAULTS = 'FAULTS',
   PARTS = 'PARTS',
-  GUIDE = 'GUIDE'
+  GUIDE = 'GUIDE',
+  SERVICES = 'SERVICES'
 }
 
 export type Language = 'en' | 'tr';

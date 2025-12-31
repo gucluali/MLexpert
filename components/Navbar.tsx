@@ -1,6 +1,6 @@
 import React from 'react';
 import { PageView, Language } from '../types';
-import { Wrench, Droplet, AlertTriangle, Cpu, Car, BookOpen, Languages, Search, LifeBuoy } from 'lucide-react';
+import { Wrench, Droplet, AlertTriangle, Cpu, Car, BookOpen, Languages, Search, LifeBuoy, MapPin } from 'lucide-react';
 
 interface NavbarProps {
   currentPage: PageView;
@@ -18,7 +18,8 @@ const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, lang, setLang 
       fluids: 'Fluids & Specs',
       faults: 'Diagnostics',
       parts: 'Part Finder',
-      guide: 'Owner Guide'
+      guide: 'Owner Guide',
+      services: 'Service Network'
     },
     tr: {
       overview: 'Özet',
@@ -27,7 +28,8 @@ const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, lang, setLang 
       fluids: 'Sıvılar & Spek',
       faults: 'Arıza Teşhis',
       parts: 'Parça Bulucu',
-      guide: 'Kullanım Rehberi'
+      guide: 'Kullanım Rehberi',
+      services: 'Servisler'
     }
   };
 
@@ -40,6 +42,7 @@ const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate, lang, setLang 
     { id: PageView.PARTS, label: t.parts, icon: Search },
     { id: PageView.FLUIDS, label: t.fluids, icon: Droplet },
     { id: PageView.FAULTS, label: t.faults, icon: AlertTriangle },
+    { id: PageView.SERVICES, label: t.services, icon: MapPin },
     { id: PageView.GUIDE, label: t.guide, icon: LifeBuoy },
   ];
 
