@@ -52,8 +52,8 @@
     "react": "https://esm.sh/react@18.2.0",
     "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
     "lucide-react": "https://esm.sh/lucide-react@0.292.0",
-    "@google/genai": "https://esm.sh/@google/genai@0.1.1",
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
     "react/": "https://esm.sh/react@^19.2.3/"
   }
 }
@@ -65,16 +65,14 @@
 
     <!-- Main Application Script -->
     <script type="text/babel" data-type="module">
-      import React, { useState, useEffect, useRef } from 'react';
+      import React, { useState, useEffect } from 'react';
       import { createRoot } from 'react-dom/client';
       import { 
-        Wrench, Droplet, AlertTriangle, Cpu, MessageSquare, 
+        Wrench, Droplet, AlertTriangle, Cpu,
         Car, BookOpen, Languages, ShieldCheck, AlertCircle, 
         CheckCircle2, Settings, Search, Activity, PenTool, 
-        CheckCircle, Send, Bot, User, Loader2, Key,
-        BadgeInfo, Gauge, Calendar, Cog, ChevronRight, Lock
+        CheckCircle, BadgeInfo, Gauge, Calendar, Cog
       } from 'lucide-react';
-      import { GoogleGenAI } from "@google/genai";
 
       // --- CONSTANTS & TYPES LOGIC ---
       const PageView = {
@@ -82,62 +80,7 @@
         MODELS: 'MODELS',
         ENGINE: 'ENGINE',
         FLUIDS: 'FLUIDS',
-        FAULTS: 'FAULTS',
-        ASSISTANT: 'ASSISTANT'
-      };
-
-      const SYSTEM_INSTRUCTION_EN = `
-        You are a World-Class Mercedes-Benz Master Technician specializing in the W164 ML-Class platform and the OM642 V6 Diesel engine. 
-        You have 20+ years of experience dealing with issues like the Oil Cooler Seals, Swirl Flap Motor (M55), Airmatic suspension, and 7G-Tronic transmission.
-        Your tone is professional, technical, authoritative, yet helpful. You speak to the user as a fellow mechanic or a knowledgeable owner.
-        Key Responsibilities:
-        1. Diagnose problems based on symptoms described.
-        2. Provide torque specifications.
-        3. Recommend specific fluid standards (MB 229.51, MB 236.14).
-        4. Explain complex repair procedures.
-        5. Interpret OBDII codes.
-        If you don't know an exact spec, advise the user to check WIS.
-      `;
-
-      const SYSTEM_INSTRUCTION_TR = `
-        Siz, W164 ML-Class platformu ve OM642 V6 Dizel motoru konusunda uzmanlaşmış Dünya Çapında bir Mercedes-Benz Usta Teknisyenisiniz.
-        Yağ Soğutucu Contaları, Girdap Kapak Motoru (M55), Airmatic süspansiyon ve 7G-Tronic şanzıman gibi sorunlarla başa çıkma konusunda 20 yılı aşkın deneyiminiz var.
-        Tonunuz profesyonel, teknik, otoriter ancak yardımseverdir. Kullanıcıyla bir tamirci meslektaşınız veya bilgili bir araç sahibi gibi konuşursunuz.
-        Temel Sorumluluklar:
-        1. Açıklanan belirtilere dayanarak sorunları teşhis edin.
-        2. Tork spesifikasyonlarını sağlayın.
-        3. Belirli sıvı standartlarını önerin (MB 229.51, MB 236.14).
-        4. Karmaşık onarım prosedürlerini açıklayın.
-        5. Mercedes'e özgü sistemlerle ilgili OBDII kodlarını yorumlayın.
-        Tam bir teknik özelliği bilmiyorsanız, tahmin etmek yerine kullanıcıya WIS'i kontrol etmesini tavsiye edin.
-      `;
-
-      // Updated to accept dynamic API Key
-      const sendMessageToExpert = async (message, history, lang, userApiKey) => {
-        if (!userApiKey) {
-          return lang === 'tr' ? "API Anahtarı eksik." : "API Key is missing.";
-        }
-
-        try {
-          const ai = new GoogleGenAI({ apiKey: userApiKey });
-          const model = ai.models.getGenerativeModel({
-            model: "gemini-1.5-flash", 
-            systemInstruction: lang === 'tr' ? SYSTEM_INSTRUCTION_TR : SYSTEM_INSTRUCTION_EN,
-          });
-
-          const chat = model.startChat({
-            history: history,
-          });
-
-          const result = await chat.sendMessage(message);
-          const response = result.response;
-          return response.text();
-        } catch (error) {
-          console.error("Error communicating with Gemini:", error);
-          return lang === 'tr' 
-            ? "Bağlantı hatası: API Anahtarınızı kontrol edin veya daha sonra tekrar deneyin."
-            : "Connection error: Please check your API Key or try again later.";
-        }
+        FAULTS: 'FAULTS'
       };
 
       // --- COMPONENTS ---
@@ -150,16 +93,14 @@
             models: 'Encyclopedia',
             engine: 'OM642 Engine',
             fluids: 'Fluids & Specs',
-            faults: 'Diagnostics',
-            assistant: 'AI Mechanic'
+            faults: 'Diagnostics'
           },
           tr: {
             overview: 'Özet',
             models: 'Ansiklopedi',
             engine: 'OM642 Motor',
             fluids: 'Sıvılar & Spek',
-            faults: 'Arıza Teşhis',
-            assistant: 'AI Uzman'
+            faults: 'Arıza Teşhis'
           }
         };
 
@@ -171,7 +112,6 @@
           { id: PageView.ENGINE, label: t.engine, icon: Cpu },
           { id: PageView.FLUIDS, label: t.fluids, icon: Droplet },
           { id: PageView.FAULTS, label: t.faults, icon: AlertTriangle },
-          { id: PageView.ASSISTANT, label: t.assistant, icon: MessageSquare },
         ];
 
         return (
@@ -513,7 +453,6 @@
           solution: lang === 'en' ? 'Repair Strategy' : 'Onarım Stratejisi',
           severity: lang === 'en' ? 'Severity' : 'Ciddiyet',
           noResults: lang === 'en' ? 'No exact match found in database.' : 'Veritabanında tam eşleşme bulunamadı.',
-          tryAI: lang === 'en' ? 'Ask the AI Mechanic for help.' : 'Yapay Zeka Uzmana danışın.',
         };
 
         const FAULT_DATABASE = [
@@ -631,7 +570,6 @@
                 <div className="text-center py-12 bg-slate-800/30 rounded-xl border border-slate-800 border-dashed">
                    <AlertTriangle className="h-12 w-12 text-slate-600 mx-auto mb-3" />
                    <p className="text-slate-400 font-medium">{t.noResults}</p>
-                   <p className="text-sm text-slate-500 mt-2">{t.tryAI}</p>
                 </div>
             )}
 
@@ -687,174 +625,6 @@
                 </div>
               </div>
             )}
-          </div>
-        );
-      };
-
-      // 5. ASSISTANT
-      const Assistant = ({ lang }) => {
-        const [messages, setMessages] = useState([]);
-        const [input, setInput] = useState('');
-        const [isLoading, setIsLoading] = useState(false);
-        const [userApiKey, setUserApiKey] = useState('');
-        const messagesEndRef = useRef(null);
-
-        useEffect(() => {
-          const greeting = lang === 'en' 
-            ? "Greetings. I am your W164 Master Technician. How can I assist with your Mercedes-Benz today?"
-            : "Merhaba. Ben W164 Uzman Teknisyeninizim. Bugün Mercedes-Benz'inizle ilgili size nasıl yardımcı olabilirim?";
-          
-          setMessages([{
-            role: 'model',
-            text: greeting,
-            timestamp: new Date()
-          }]);
-        }, [lang]);
-
-        const scrollToBottom = () => {
-          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-        };
-
-        useEffect(() => {
-          scrollToBottom();
-        }, [messages]);
-
-        const handleSend = async () => {
-          if (!input.trim() || isLoading) return;
-          if (!userApiKey) {
-             alert(lang === 'en' ? 'Please enter your Gemini API Key first.' : 'Lütfen önce Gemini API Anahtarınızı girin.');
-             return;
-          }
-
-          const userMsg = { role: 'user', text: input, timestamp: new Date() };
-          setMessages(prev => [...prev, userMsg]);
-          setInput('');
-          setIsLoading(true);
-
-          try {
-            const history = messages.map(m => ({
-              role: m.role,
-              parts: [{ text: m.text }]
-            }));
-
-            // Pass the userApiKey to the helper
-            const responseText = await sendMessageToExpert(input, history, lang, userApiKey);
-            
-            const botMsg = { 
-              role: 'model', 
-              text: responseText, 
-              timestamp: new Date() 
-            };
-            setMessages(prev => [...prev, botMsg]);
-          } catch (error) {
-            const errorMsg = {
-              role: 'model',
-              text: lang === 'en' 
-                ? "I apologize, my diagnostic system is currently offline." 
-                : "Üzgünüm, teşhis sistemim şu anda çevrimdışı.",
-              timestamp: new Date()
-            };
-            setMessages(prev => [...prev, errorMsg]);
-          } finally {
-            setIsLoading(false);
-          }
-        };
-
-        const handleKeyDown = (e) => {
-          if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleSend();
-          }
-        };
-
-        return (
-          <div className="h-[600px] flex flex-col bg-slate-900 border border-slate-700 rounded-xl overflow-hidden shadow-2xl">
-            <div className="bg-slate-800 p-4 border-b border-slate-700 flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="bg-blue-600 p-2 rounded-full">
-                    <Bot className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-white font-bold">MB Master Tech AI</h3>
-                    <p className="text-xs text-blue-400">Powered by Gemini | OM642 Specialist</p>
-                  </div>
-                </div>
-              </div>
-              
-              {/* API Key Input for GitHub Pages */}
-              <div className="bg-slate-900/80 p-3 rounded-lg border border-slate-700 flex items-center gap-2">
-                 <Lock className="h-4 w-4 text-amber-500" />
-                 <input 
-                    type="password" 
-                    value={userApiKey}
-                    onChange={(e) => setUserApiKey(e.target.value)}
-                    placeholder={lang === 'en' ? "Paste Gemini API Key here to activate..." : "Gemini API Anahtarını buraya yapıştır..."}
-                    className="bg-transparent border-none text-xs text-white w-full focus:ring-0 placeholder-slate-500"
-                 />
-                 <a href="https://aistudio.google.com/app/apikey" target="_blank" className="text-[10px] text-blue-400 whitespace-nowrap hover:underline">
-                    {lang === 'en' ? 'Get Key' : 'Anahtar Al'}
-                 </a>
-              </div>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-900/50">
-              {messages.map((msg, idx) => (
-                <div 
-                  key={idx} 
-                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div 
-                    className={`max-w-[85%] rounded-2xl p-4 ${
-                      msg.role === 'user' 
-                        ? 'bg-blue-600 text-white rounded-br-none' 
-                        : 'bg-slate-800 text-slate-200 border border-slate-700 rounded-bl-none'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 mb-1 opacity-50 text-xs">
-                       {msg.role === 'user' ? <User className="h-3 w-3" /> : <Bot className="h-3 w-3" />}
-                       <span>{msg.role === 'user' ? (lang === 'en' ? 'You' : 'Siz') : (lang === 'en' ? 'Expert' : 'Uzman')}</span>
-                    </div>
-                    <p className="whitespace-pre-wrap text-sm leading-relaxed">{msg.text}</p>
-                  </div>
-                </div>
-              ))}
-              {isLoading && (
-                <div className="flex justify-start">
-                  <div className="bg-slate-800 rounded-2xl rounded-bl-none p-4 border border-slate-700">
-                     <div className="flex items-center gap-2 text-slate-400 text-sm">
-                       <Loader2 className="h-4 w-4 animate-spin" />
-                       <span>{lang === 'en' ? 'Analyzing diagnostics...' : 'Arıza analiz ediliyor...'}</span>
-                     </div>
-                  </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-
-            <div className="p-4 bg-slate-800 border-t border-slate-700">
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder={lang === 'en' ? "Ask about oil leaks, limp mode..." : "Yağ kaçakları, koruma modu hakkında sorun..."}
-                  className="flex-1 bg-slate-900 border border-slate-600 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder-slate-500"
-                  disabled={isLoading}
-                />
-                <button 
-                  onClick={handleSend}
-                  disabled={isLoading || !input.trim()}
-                  className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white p-3 rounded-lg transition-colors"
-                >
-                  <Send className="h-5 w-5" />
-                </button>
-              </div>
-              <p className="text-center text-[10px] text-slate-500 mt-2">
-                 {lang === 'en' ? 'AI can make mistakes. Verify with WIS.' : 'Yapay zeka hata yapabilir. WIS ile doğrulayın.'}
-              </p>
-            </div>
           </div>
         );
       };
@@ -1007,22 +777,6 @@
               return <FluidTable lang={lang} />;
             case PageView.FAULTS:
               return <FaultsList lang={lang} />;
-            case PageView.ASSISTANT:
-              return (
-                <div className="max-w-4xl mx-auto animate-fade-in">
-                   <div className="mb-6">
-                      <h2 className="text-2xl font-bold text-white mb-2">
-                        {lang === 'en' ? 'Virtual Master Technician' : 'Sanal Usta Teknisyen'}
-                      </h2>
-                      <p className="text-slate-400">
-                          {lang === 'en' 
-                            ? 'Use this tool to ask complex questions not covered in the static guides. The AI is trained to act as a Mercedes-Benz specialist.'
-                            : 'Statik kılavuzlarda kapsanmayan karmaşık soruları sormak için bu aracı kullanın. Yapay zeka Mercedes-Benz uzmanı olarak eğitilmiştir.'}
-                      </p>
-                   </div>
-                   <Assistant lang={lang} />
-                </div>
-              );
             case PageView.HOME:
             default:
               return (
@@ -1069,7 +823,7 @@
                   </div>
 
                   {/* Quick Stats Grid */}
-                  <div className="grid md:grid-cols-3 gap-6">
+                  <div className="grid md:grid-cols-2 gap-6">
                       <div className="bg-slate-800/80 backdrop-blur-sm p-6 rounded-xl border border-slate-700 hover:border-blue-500/50 transition-colors shadow-lg">
                           <ShieldCheck className="h-10 w-10 text-emerald-500 mb-4" />
                           <h3 className="text-xl font-bold text-white mb-2">{lang === 'en' ? 'Reliability Mods' : 'Dayanıklılık Modları'}</h3>
@@ -1088,20 +842,11 @@
                                 : 'DIY servis için tam sıvı kapasiteleri, tork spesifikasyonları ve MB Sayfa numaraları (229.51, 236.14).'}
                           </p>
                       </div>
-                      <div className="bg-slate-800/80 backdrop-blur-sm p-6 rounded-xl border border-slate-700 hover:border-blue-500/50 transition-colors shadow-lg">
-                          <div className="h-10 w-10 text-blue-500 mb-4 font-mono text-3xl font-bold">AI</div>
-                          <h3 className="text-xl font-bold text-white mb-2">{lang === 'en' ? 'Interactive Diagnosis' : 'İnteraktif Teşhis'}</h3>
-                          <p className="text-slate-400 text-sm leading-relaxed">
-                              {lang === 'en' 
-                                ? 'Not sure what that code means? Chat with our fine-tuned Gemini model trained on Mercedes workshop logic.'
-                                : 'Bu kodun ne anlama geldiğinden emin değil misiniz? Mercedes atölye mantığıyla eğitilmiş Gemini modelimizle sohbet edin.'}
-                          </p>
-                      </div>
                   </div>
                   
                   <div className="text-center pt-8 border-t border-slate-800 text-slate-500 text-sm">
                       <p>{lang === 'en' ? 'Designed for Enthusiasts. Not affiliated with Mercedes-Benz Group AG.' : 'Meraklılar için tasarlanmıştır. Mercedes-Benz Group AG ile bağlantısı yoktur.'}</p>
-                      <p className="mt-2 font-mono text-xs">W164 EXPERT v1.2.0 (Single File Edition)</p>
+                      <p className="mt-2 font-mono text-xs">W164 EXPERT v1.3.0 (Single File Edition)</p>
                   </div>
                 </div>
               );
